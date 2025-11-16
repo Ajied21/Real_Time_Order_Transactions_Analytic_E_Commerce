@@ -1,0 +1,27 @@
+name: 'dbt_multi_platform'
+version: '1.0.0'
+config-version: 2
+
+# Gunakan satu profile saja yang berisi dua target (BigQuery dan Redshift)
+profile: 'dbt_multi'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dbt_multi_pipeline:
+    +materialized: view
+    staging:
+      +schema: staging
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table

@@ -1,0 +1,40 @@
+services:
+  prometheus:
+    container_name: ${PROMETHEUS_CONTAINER_NAME}
+    image: prom/prometheus:latest
+    volumes:
+      - ./file/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-storage:/prometheus
+    ports:
+      - "${PROMETHEUS_UI_PORT}:9090"
+    networks:
+      - Batching-Processing
+      - Streaming-Processing
+    restart: always
+
+  grafana:
+    container_name: ${GRAFANA_CONTAINER_NAME}
+    image: Monitoring/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_SECURITY_ADMIN_PASSWORD}
+    ports:
+      - "${GRAFANA_UI_PORT}:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - Batching-Processing
+      - Streaming-Processing
+    restart: always
+
+volumes:
+  prometheus-storage:
+  grafana-storage:
+
+networks:
+  Batching-Processing:
+    external: true
+  Streaming-Processing:
+    external: true

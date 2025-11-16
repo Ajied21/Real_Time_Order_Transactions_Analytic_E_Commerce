@@ -1,0 +1,19 @@
+# Use the official PostgreSQL base image (version 15)
+FROM postgres:15
+
+# Set environment variables for PostgreSQL configuration
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV POSTGRES_DB=${POSTGRES_DB}
+
+# Define the directory where PostgreSQL stores its data
+ENV PGDATA=/var/lib/postgresql/data/pgdata
+
+# Copy all SQL initialization scripts into PostgreSQL’s default init directory
+#COPY ./sql/*.sql /docker-entrypoint-initdb.d/
+
+# Set appropriate permissions for the initialization directory
+RUN chmod -R 755 /docker-entrypoint-initdb.d
+
+# Expose PostgreSQL’s default port
+EXPOSE 5432

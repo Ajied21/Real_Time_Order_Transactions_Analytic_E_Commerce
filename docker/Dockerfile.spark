@@ -1,0 +1,24 @@
+# Use the official Apache Spark base image (version 3.5.5)
+FROM apache/spark:3.5.5
+
+# Switch to root user to install system-level dependencies
+USER root
+
+# Update package list and install essential tools for Python and system builds
+RUN apt-get update && apt-get install -y \
+    curl gcc python3-dev python3-pip
+
+# Download PostgreSQL JDBC driver so Spark can connect to PostgreSQL databases
+RUN curl -L https://jdbc.postgresql.org/download/postgresql-42.2.18.jar -o /opt/spark/jars/postgresql-42.2.18.jar
+
+# Download commons-pool2 library (used for connection pooling in Spark)
+RUN curl -L https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commons-pool2-2.11.1.jar -o /opt/spark/jars/commons-pool2-2.11.1.jar
+
+# Copy Python requirements specific to Spark into the container
+COPY ./docker/requirements_spark.txt .
+
+# Install all required Python packages from the requirements file
+RUN pip install --no-cache-dir -r requirements_spark.txt
+
+# Copy environment configuration file into the container
+COPY ./.env /opt/app/.env

@@ -1,0 +1,18 @@
+FROM confluentinc/cp-kafka-connect:7.9.4
+
+USER root
+
+# Copy connector Debezium dari folder local
+COPY ./docker/file/*.tar.gz /tmp/
+
+# Extract semua plugin
+RUN mkdir -p /opt/connectors && \
+    for f in /tmp/*.tar.gz; do \
+        echo "Extracting $f ..."; \
+        tar -xzf "$f" -C /opt/connectors; \
+    done && \
+    rm -f /tmp/*.tar.gz
+
+ENV CONNECT_PLUGIN_PATH=/opt/connectors
+
+EXPOSE 8083

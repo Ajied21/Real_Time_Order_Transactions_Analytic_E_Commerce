@@ -1,0 +1,23 @@
+services:
+  jobmanager:
+    container_name: ${FLINK_JOBMANAGER_CONTAINER_NAME}
+    image: Streaming/flink
+    command: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=${FLINK_JOB_MANAGER_RPC_ADDRESS}
+    ports:
+      - "${FLINK_JOBMANAGER_PORT}:8081"
+
+  taskmanager:
+    container_name: ${FLINK_TASKMANAGER_CONTAINER_NAME}
+    image: Streaming/flink
+    command: taskmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=${FLINK_JOB_MANAGER_RPC_ADDRESS}
+    depends_on:
+      - jobmanager
+
+networks:
+  default:
+    name: Streaming-Processing
+    external: true
