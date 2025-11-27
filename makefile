@@ -15,25 +15,28 @@ docker-networks:
 	@echo '__________________________________________________________'
 	@echo 'Building Docker Networks for Batching and Streaming Processing ...'
 	@echo '__________________________________________________________'
-	@if docker network inspect Batching-Processing >/dev/null 2>&1; then \
-		echo "Network 'Batching-Processing' already exists."; \
+	@if docker network inspect batching-processing >/dev/null 2>&1; then \
+		echo "Network 'batching-processing' already exists."; \
 	else \
-		echo "Creating network 'Batching-Processing'..."; \
-		docker network create Batching-Processing; \
+		echo "Creating network 'batching-processing'..."; \
+		docker network create batching-processing; \
 	fi
 	@echo '__________________________________________________________'
-	@if docker network inspect Streaming-Processing >/dev/null 2>&1; then \
-		echo "Network 'Streaming-Processing' already exists."; \
+	@if docker network inspect streaming-processing >/dev/null 2>&1; then \
+		echo "Network 'streaming-processing' already exists."; \
 	else \
-		echo "Creating network 'Streaming-Processing'..."; \
-		docker network create Streaming-Processing; \
+		echo "Creating network 'streaming-processing'..."; \
+		docker network create streaming-processing; \
 	fi
 	@echo '==========================================================='
 
-postgres-create:
-	@docker build -t Staging/postgres -f ./docker/Dockerfile.postgres .
+
+# Docker___
+
+postgres:
+	@docker build -t staging_postgres -f ./docker/Dockerfile.postgres .
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-postgres.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-postgres.yaml --env-file .env up -d
 	@echo '__________________________________________________________'
 	@echo 'Postgres container created at port ${POSTGRES_PORT}...'
 	@echo '__________________________________________________________'
@@ -43,80 +46,28 @@ postgres-create:
 		echo 'Postgres Db		: ${POSTGRES_DB}'
 	@echo '==========================================================='
 
-postgres-create-warehouse-and-backup:
-	@echo '__________________________________________________________'
-	@echo 'Creating Warehouse and Backup Databases...'
-	@echo '__________________________________________________________'
-	@if docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -tAc "SELECT 1 FROM pg_database WHERE datname='warehouse'" | grep -q 1; then \
-		echo 'Database "warehouse" already exists.'; \
-	else \
-		docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "CREATE DATABASE warehouse"; \
-		echo 'Database "warehouse" created.'; \
-	fi; \
-	if docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -tAc "SELECT 1 FROM pg_database WHERE datname='backup'" | grep -q 1; then \
-		echo 'Database "backup" already exists.'; \
-	else \
-		docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "CREATE DATABASE backup"; \
-		echo 'Database "backup" created.'; \
-	fi
-	@echo '==========================================================='
-
-postgres: postgres-create postgres-create-warehouse-and-backup
-
 docker-build-batching:
 	@echo '__________________________________________________________'
-	@echo 'Building Docker Images Batching Processing ...'
+	@echo 'Building Docker Images Batching for Kubernetes in Processing ...'
 	@echo '__________________________________________________________'
-	@docker build -t Batching/airflow -f ./docker/Dockerfile.airflow .
+	@docker build -t batching_airflow -f ./docker/Dockerfile.airflow .
 	@echo '__________________________________________________________'
-	@docker build -t Batching/spark -f ./docker/Dockerfile.spark .
+	@docker build -t batching_spark -f ./docker/Dockerfile.spark .
 	@echo '==========================================================='
 
 airflow:
 	@echo '__________________________________________________________'
 	@echo 'Creating Airflow Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-airflow.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-airflow.yaml --env-file .env up -d
 	@echo '==========================================================='
 
 spark:
 	@echo '__________________________________________________________'
 	@echo 'Creating Spark Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-spark.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-spark.yaml --env-file .env up -d
 	@echo '==========================================================='
-
-# spark-produce-crypto:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Producing streaming cryptocurrency events ...'
-# 	@echo '__________________________________________________________'
-# 	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-1 \
-# 		spark-submit \
-# 		/spark-scripts/cryptocurrency.py
-
-# spark-consume-assets:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Consuming Assets events ...'
-# 	@echo '__________________________________________________________'
-# 	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-2 \
-# 		spark-submit \
-# 		/spark-scripts/assets.py
-
-# spark-consume-rates:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Consuming Rates events ...'
-# 	@echo '__________________________________________________________'
-# 	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-2 \
-# 		spark-submit \
-# 		/spark-scripts/rates.py
-
-# spark-consume-exchanges:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Consuming Exchanges events ...'
-# 	@echo '__________________________________________________________'
-# 	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-2 \
-# 		spark-submit \
-# 		/spark-scripts/exchanges.py
 
 # spark-consume-markets:
 # 	@echo '__________________________________________________________'
@@ -133,7 +84,7 @@ download-debezium-connector-postgres:
 	    echo "FILE SUDAH ADA: ${DEBEZIUM_FILE}"; \
 	else \
 	    echo "FILE TIDAK ADA, MENDOWNLOAD..."; \
-	    mkdir -p ./docker/file; \
+	    mkdir -p ./docker/debezium/file; \
 	    curl -L -o ${DEBEZIUM_PATH} ${DEBEZIUM_URL}; \
 	    echo "Download selesai → ${DEBEZIUM_PATH}"; \
 	fi
@@ -142,13 +93,13 @@ download-debezium-connector-postgres:
 create-debezium-ui-config:
 	@echo "__________________________________________________________"
 	@echo "Cek File Konfigurasi Debezium UI..."
-	@if [ -f "./docker/file/debezium-ui.properties" ]; then \
+	@if [ -f "./docker/debezium/file/debezium-ui.properties" ]; then \
 	    echo "FILE SUDAH ADA: debezium-ui.properties"; \
 	else \
 	    echo "FILE TIDAK ADA, MEMBUAT FILE..."; \
-	    mkdir -p ./docker/file; \
-	    echo "debezium.ui.config.storage.url=http://debezium:8083" > ./docker/file/debezium-ui.properties; \
-	    echo "Config berhasil dibuat → ./docker/file/debezium-ui.properties"; \
+	    mkdir -p ./docker/debezium/file; \
+	    echo "debezium.ui.config.storage.url=http://debezium:8083" > ./docker/debezium/file/debezium-ui.properties; \
+	    echo "Config berhasil dibuat → ./docker/debezium/file/debezium-ui.properties"; \
 	fi
 	@echo "==========================================================="
 
@@ -156,46 +107,116 @@ docker-build-streaming: download-debezium-connector-postgres create-debezium-ui-
 	@echo '__________________________________________________________'
 	@echo 'Building Docker Images Streaming Processing ...'
 	@echo '__________________________________________________________'
-	@docker build -t Streaming/kafka -f ./docker/Dockerfile.kafka .
+	@docker build -t streaming_kafka -f ./docker/Dockerfile.kafka .
 	@echo '__________________________________________________________'
-	@docker build -t Streaming/debezium -f ./docker/Dockerfile.debezium .
+	@docker build -t streaming_debezium -f ./docker/Dockerfile.debezium .
 	@echo '__________________________________________________________'
-	@docker build -t Streaming/flink -f ./docker/Dockerfile.flink .
+	@docker build -t streaming_flink -f ./docker/Dockerfile.flink .
 	@echo '==========================================================='
 
 kafka:
 	@echo '__________________________________________________________'
 	@echo 'Creating Kafka Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-kafka.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-kafka.yaml --env-file .env up -d
 	@echo '==========================================================='
 
 kafka-stop:
 	@echo '__________________________________________________________'
 	@echo 'Stopping Kafka Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-kafka.yml --env-file .env stop
+	@docker compose -f ./docker/docker-compose-kafka.yaml --env-file .env stop
 	@echo '==========================================================='
 
 flink:
 	@echo '__________________________________________________________'
 	@echo 'Creating Flink Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-flink.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-flink.yaml --env-file .env up -d
 	@echo '==========================================================='
 
 docker-build-monitoring:
 	@echo '__________________________________________________________'
 	@echo 'Building Docker Images Monitoring ...'
 	@echo '__________________________________________________________'
-	@docker build -t Monitoring/grafana -f ./docker/Dockerfile.grafana .
+	@docker build -t monitoring_grafana -f ./docker/Dockerfile.grafana .
+	@echo '__________________________________________________________'
+	@docker build -t monitoring_prometheus -f ./docker/Dockerfile.prometheus .
 	@echo '==========================================================='
 
-grafana:
+grafana-prometheus:
 	@echo '__________________________________________________________'
-	@echo 'Creating Grafana Instance ...'
+	@echo 'Creating Grafana And Pometheus Instance ...'
 	@echo '__________________________________________________________'
-	@docker compose -f ./docker/docker-compose-grafana.yml --env-file .env up -d
+	@docker compose -f ./docker-compose/docker-compose-grafana.yaml --env-file .env up -d
+	@echo '__________________________________________________________'
+	@docker compose -f ./docker-compose/docker-compose-prometheus.yaml --env-file .env up -d
+	@echo '==========================================================='
+
+# Kubernetes___
+
+kubectl-database-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Apply Kubernetes Database Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -R -f k8s/database/
+	@echo '==========================================================='
+
+kubectl-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Apply Kubernetes Batching Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -R -f k8s/batching/
+	@echo '==========================================================='
+
+kubectl-streaming-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Apply Kubernetes Streaming Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -R -f k8s/streaming/
+	@echo '==========================================================='
+
+kubectl-monitoring-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Apply Kubernetes Monitoring Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -R -f k8s/monitoring/
+	@echo '==========================================================='
+
+kubectl-running-database-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Running Kubernetes Database Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/pgadmin 8888:80 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+kubectl-running-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Running Kubernetes Batching Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/airflow 8085:8080 > /dev/null 2>&1 &
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/spark-worker 9100:9102 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+kubectl-running-streaming-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Running Kubernetes Streaming Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/debezium 8888:80 > /dev/null 2>&1 &
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/kafka 8888:80 > /dev/null 2>&1 &
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/flink 8888:80 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+kubectl-running-monitoring-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Running Kubernetes Monitoring Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/prometheus 9191:9090 > /dev/null 2>&1 &
+	@echo '__________________________________________________________'
+	@kubectl port-forward svc/grafana 3000:3000 > /dev/null 2>&1 &
 	@echo '==========================================================='
 
 clean:

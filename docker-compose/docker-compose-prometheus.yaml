@@ -1,0 +1,38 @@
+services:
+
+  prometheus:
+    container_name: ${PROMETHEUS_CONTAINER_NAME}
+    image: monitoring_prometheus
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
+    volumes:
+      - prometheus-storage:/prometheus
+    ports:
+      - ${PROMETHEUS_UI_PORT}:9090
+    networks:
+      - Batching-Processing
+      - Streaming-Processing
+    restart: always
+
+configs:
+
+  prometheus-config:
+    content: |
+      global:
+        scrape_interval: 5s
+
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['prometheus:9090']
+
+volumes:
+  prometheus-storage:
+    name: prometheus_metrics
+
+networks:
+  Batching-Processing:
+    external: true
+  Streaming-Processing:
+    external: true
