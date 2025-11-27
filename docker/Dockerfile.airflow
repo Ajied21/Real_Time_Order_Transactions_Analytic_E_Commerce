@@ -1,46 +1,46 @@
-# Use the official Apache Airflow base image (version 3.1.2)
-FROM apache/airflow:3.1.2-python3.10
+FROM apache/airflow:3.1.1
 
-# Set environment variables
+RUN pip install --no-cache-dir airflow-dag-dependencies
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk python3-venv build-essential curl && \
+    apt-get clean
+
 ENV AIRFLOW_HOME=/opt/airflow
-ENV DBT_VENV_PATH="${AIRFLOW_HOME}/dbt_venv"
-ENV DBT_PROJECT_PATH="${AIRFLOW_HOME}/dags/dbt"
+ENV DBT_VENV_PATH=$AIRFLOW_HOME/dbt_venv
 ENV PATH="${DBT_VENV_PATH}/bin:${PATH}"
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-# Switch to root to install system packages
-USER root
+# === COPY ENTRYPOINT SCRIPT (WAJIB) ===
+COPY ./scripts /scripts
+RUN chmod +x /scripts/entrypoint.sh
 
-# Install Java, Python venv tools, build essentials, Rust for Polars
-RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk ant procps python3-venv build-essential rustc cargo && \
-    apt-get clean
+# Copy requirements
+COPY ./scripts/requirements_airflow.txt /requirements_airflow.txt
 
-# Upgrade pip, setuptools, wheel
-RUN python3 -m pip install --upgrade pip setuptools wheel
-
-# Switch back to airflow user
+# Gunakan user airflow
 USER airflow
 
-# Create virtual environment for dbt and install all dbt packages together
-RUN python3 -m venv "${DBT_VENV_PATH}" && \
-    . "${DBT_VENV_PATH}/bin/activate" && \
+RUN pip install --user --upgrade pip setuptools wheel
+
+RUN pip install --user --no-cache-dir -r /requirements_airflow.txt
+
+# Install dbt venv
+RUN python3 -m venv $DBT_VENV_PATH && \
+    . $DBT_VENV_PATH/bin/activate && \
     pip install --no-cache-dir \
         dbt-core==1.6.0 \
         dbt-bigquery==1.6.0 \
         dbt-redshift==1.6.0 \
-        dbt-spark==1.6.0 && \
-    deactivate
+        dbt-spark==1.6.0 \
+        dbt-postgres==1.6.0 \
+        great-expectations==1.2.0 \
+    && deactivate
 
-# Install other Airflow provider packages and dependencies
-COPY ./docker/requirements_airflow.txt .
-RUN . "${DBT_VENV_PATH}/bin/activate" && \
-    pip install --no-cache-dir -r requirements_airflow.txt && \
-    deactivate
-
-# Setup dbt profiles
-RUN mkdir -p "${AIRFLOW_HOME}/.dbt"
-COPY ./dags/dbt/profiles.yml "${AIRFLOW_HOME}/.dbt/profiles.yml"
+RUN mkdir -p "$AIRFLOW_HOME/.dbt"
+COPY ./dags/dbt/profiles.yaml "$AIRFLOW_HOME/.dbt/profiles.yaml"
 
 # Copy dags
 COPY --chown=airflow:root ./dags /opt/airflow/dags

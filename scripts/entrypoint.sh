@@ -1,25 +1,30 @@
 #!/bin/bash
 set -euo pipefail
 
-# Inisialisasi DB
+# Inisialisasi Database Airflow
 airflow db migrate
-airflow connections create-default-connections
+airflow connections create-default-connections || true
 
-# Tambahkan connection Postgres
-airflow connections add 'postgres_main' \
-    --conn-type 'postgres' \
-    --conn-login $POSTGRES_USER \
-    --conn-password $POSTGRES_PASSWORD \
-    --conn-host $POSTGRES_CONTAINER_NAME \
-    --conn-port $POSTGRES_PORT \
-    --conn-schema $POSTGRES_DB \
+# === Koneksi Postgres ===
+POSTGRES_URI="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME}:${POSTGRES_PORT}/${POSTGRES_DB}"
 
-# Tambahkan connection Spark
-export SPARK_FULL_HOST_NAME="spark://$SPARK_MASTER_HOST_NAME"
-airflow connections add 'spark_main' \
-    --conn-type 'spark' \
-    --conn-host $SPARK_FULL_HOST_NAME \
-    --conn-port $SPARK_MASTER_PORT \
+# Cek apakah koneksi sudah ada
+if ! airflow connections get 'postgres_main' >/dev/null 2>&1; then
+    airflow connections add 'postgres_main' --conn-uri "$POSTGRES_URI"
+else
+    echo "Connection postgres_main sudah ada — skip"
+fi
 
-# Jalankan webserver **tanpa `--skip-if-exists`**
-exec airflow webserver
+
+# === Koneksi Spark ===
+if ! airflow connections get 'spark_main' >/dev/null 2>&1; then
+    airflow connections add 'spark_main' \
+        --conn-type 'spark' \
+        --conn-host "$SPARK_MASTER_HOST_NAME" \
+        --conn-port "$SPARK_MASTER_PORT"
+else
+    echo "Connection spark_main sudah ada — skip"
+fi
+
+# Jalankan apiserver
+exec airflow api-server
