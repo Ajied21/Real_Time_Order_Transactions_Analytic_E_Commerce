@@ -3,7 +3,7 @@ FROM confluentinc/cp-kafka-connect:7.9.4
 USER root
 
 # Copy connector Debezium dari folder local
-COPY ./docker/file/*.tar.gz /tmp/
+COPY ./scripts/*.tar.gz /tmp/
 
 # Extract semua plugin
 RUN mkdir -p /opt/connectors && \

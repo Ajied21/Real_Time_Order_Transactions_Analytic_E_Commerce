@@ -31,7 +31,9 @@ docker-networks:
 	@echo '==========================================================='
 
 
+# ---------
 # Docker___
+# ---------
 
 postgres:
 	@docker build -t staging_postgres -f ./docker/Dockerfile.postgres .
@@ -84,7 +86,7 @@ download-debezium-connector-postgres:
 	    echo "FILE SUDAH ADA: ${DEBEZIUM_FILE}"; \
 	else \
 	    echo "FILE TIDAK ADA, MENDOWNLOAD..."; \
-	    mkdir -p ./docker/debezium/file; \
+	    mkdir -p ./scripts; \
 	    curl -L -o ${DEBEZIUM_PATH} ${DEBEZIUM_URL}; \
 	    echo "Download selesai → ${DEBEZIUM_PATH}"; \
 	fi
@@ -93,13 +95,13 @@ download-debezium-connector-postgres:
 create-debezium-ui-config:
 	@echo "__________________________________________________________"
 	@echo "Cek File Konfigurasi Debezium UI..."
-	@if [ -f "./docker/debezium/file/debezium-ui.properties" ]; then \
+	@if [ -f "./scripts/debezium-ui.properties" ]; then \
 	    echo "FILE SUDAH ADA: debezium-ui.properties"; \
 	else \
 	    echo "FILE TIDAK ADA, MEMBUAT FILE..."; \
-	    mkdir -p ./docker/debezium/file; \
-	    echo "debezium.ui.config.storage.url=http://debezium:8083" > ./docker/debezium/file/debezium-ui.properties; \
-	    echo "Config berhasil dibuat → ./docker/debezium/file/debezium-ui.properties"; \
+	    mkdir -p ./scripts; \
+	    echo "debezium.ui.config.storage.url=http://debezium:8083" > ./scripts/debezium-ui.properties; \
+	    echo "Config berhasil dibuat → ./scripts/debezium-ui.properties"; \
 	fi
 	@echo "==========================================================="
 
@@ -153,7 +155,9 @@ grafana-prometheus:
 	@docker compose -f ./docker-compose/docker-compose-prometheus.yaml --env-file .env up -d
 	@echo '==========================================================='
 
+# -------------
 # Kubernetes___
+# -------------
 
 kubectl-database-k8s:
 	@echo '__________________________________________________________'
@@ -169,6 +173,24 @@ kubectl-batching-k8s:
 	@kubectl apply -R -f k8s/batching/
 	@echo '==========================================================='
 
+kubectl-Stopping-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Stopping Kubernetes Batching ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment airflow --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment spark --replicas=0
+	@echo '==========================================================='
+
+kubectl-Starting-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Starting Kubernetes Batching ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment airflow --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment spark --replicas=1
+	@echo '==========================================================='
+
 kubectl-streaming-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Apply Kubernetes Streaming Processing ...'
@@ -176,11 +198,55 @@ kubectl-streaming-k8s:
 	@kubectl apply -R -f k8s/streaming/
 	@echo '==========================================================='
 
+kubectl-Stopping-streaming-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Stopping Kubernetes Streaming ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment debezium --replicas=0
+	@echo '__________________________________________________________'
+	@kubectl scale deployment debezium-ui --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment kafka --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment kafka-ui --replicas=0
+	@echo '==========================================================='
+
+kubectl-Starting-streaming-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Starting Kubernetes Streaming ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment debezium --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment debezium-ui --replicas=1
+	@echo '__________________________________________________________'
+	@kubectl scale deployment kafka --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment kafka-ui --replicas=1
+	@echo '==========================================================='
+
 kubectl-monitoring-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Apply Kubernetes Monitoring Processing ...'
 	@echo '__________________________________________________________'
 	@kubectl apply -R -f k8s/monitoring/
+	@echo '==========================================================='
+
+kubectl-Stopping-monitoring-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Stopping Kubernetes Monitoring ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment prometheus --replicas=0
+	@echo '__________________________________________________________'
+	@kubectl scale deployment grafana --replicas=0
+	@echo '==========================================================='
+
+kubectl-Starting-monitoring-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Starting Kubernetes Monitoring ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment prometheus --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment grafana --replicas=1
 	@echo '==========================================================='
 
 kubectl-running-database-k8s:
@@ -203,11 +269,11 @@ kubectl-running-streaming-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Running Kubernetes Streaming Processing ...'
 	@echo '__________________________________________________________'
-	@kubectl port-forward svc/debezium 8888:80 > /dev/null 2>&1 &
+	@kubectl port-forward svc/debezium-ui 8095:8095 > /dev/null 2>&1 &
 	@echo '__________________________________________________________'
-	@kubectl port-forward svc/kafka 8888:80 > /dev/null 2>&1 &
+	@kubectl port-forward svc/kafka-ui 8087:8087 > /dev/null 2>&1 &
 	@echo '__________________________________________________________'
-	@kubectl port-forward svc/flink 8888:80 > /dev/null 2>&1 &
+	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /dev/null 2>&1 &
 	@echo '==========================================================='
 
 kubectl-running-monitoring-k8s:

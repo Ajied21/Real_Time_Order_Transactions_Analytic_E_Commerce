@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-ui
+  template:
+    metadata:
+      labels:
+        app: debezium-ui
+    spec:
+      containers:
+        - name: debezium-ui
+          image: debezium/debezium-ui:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DEBEZIUM_UI_CONFIG
+              value: |
+                quarkus.rest-client."debezium-connect-apis".url=http://debezium:8083
+          volumeMounts:
+            - name: debezium-ui-config
+              mountPath: /debezium-ui/config/application.properties
+              subPath: application.properties
+      volumes:
+        - name: debezium-ui-config
+          configMap:
+            name: debezium-ui-config
