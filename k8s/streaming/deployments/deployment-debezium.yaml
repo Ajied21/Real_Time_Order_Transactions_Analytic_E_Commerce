@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium
+  labels:
+    app: debezium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium
+  template:
+    metadata:
+      labels:
+        app: debezium
+    spec:
+      containers:
+      - name: debezium
+        image: streaming_debezium
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8083
+        env:
+        - name: CONNECT_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+
+        # Storage Topics
+        - name: CONNECT_GROUP_ID
+          value: "1"
+        - name: CONNECT_CONFIG_STORAGE_TOPIC
+          value: "_debezium_config"
+        - name: CONNECT_OFFSET_STORAGE_TOPIC
+          value: "_debezium_offset"
+        - name: CONNECT_STATUS_STORAGE_TOPIC
+          value: "_debezium_status"
+
+        # Replication factor (karena single-node cluster → harus 1)
+        - name: CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR
+          value: "1"
+        - name: CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR
+          value: "1"
+        - name: CONNECT_STATUS_STORAGE_REPLICATION_FACTOR
+          value: "1"
+
+        # REQUIRED converters
+        - name: CONNECT_KEY_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+        - name: CONNECT_VALUE_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+        - name: CONNECT_INTERNAL_KEY_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+        - name: CONNECT_INTERNAL_VALUE_CONVERTER
+          value: "org.apache.kafka.connect.json.JsonConverter"
+
+        # REST Interface
+        - name: CONNECT_REST_ADVERTISED_HOST_NAME
+          value: "debezium"
+        - name: CONNECT_REST_PORT
+          value: "8083"
+
+        # Plugin Path
+        - name: CONNECT_PLUGIN_PATH
+          value: "/opt/connectors"
