@@ -32,13 +32,13 @@ Batch objectives
 # ERD (Entity Relationship Diagram)
 
 <div style="text-align: center;">
-  <img src="./images/ERD.jpg" width="700">
+  <img src="./images/ERD.jpg" width="500">
 </div>
 
 # Data Architecture
 
 <div style="text-align: center;">
-  <img src="./images/Architectures.png" width="750">
+  <img src="./images/Architectures.png" width="950">
 </div>
 
 # Technologies
