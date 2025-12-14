@@ -257,38 +257,114 @@ kubectl-Starting-monitoring-k8s:
 # -------------
 
 kubectl-running-database-k8s:
-	@echo '__________________________________________________________'
+	@echo '==========================================================='
 	@echo 'Running Kubernetes Database Processing ...'
-	@kubectl port-forward svc/pgadmin 8888:80 > /dev/null 2>&1 &
 	@echo '==========================================================='
 
+	@echo 'Starting pgAdmin port-forward (8888)...'
+	@kubectl port-forward svc/pgadmin 8888:80 > /tmp/pgadmin_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8888' >/dev/null 2>&1 && \
+	echo 'pgAdmin READY at http://localhost:8888' || \
+	( echo 'pgAdmin FAILED'; tail -n 5 /tmp/pgadmin_pf.log )
+
+	@echo 'Starting PostgreSQL port-forward (5432)...'
+	@kubectl port-forward svc/postgres 5432:5432 > /tmp/postgres_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':5432' >/dev/null 2>&1 && \
+	echo 'PostgreSQL READY at localhost:5432' || \
+	( echo 'PostgreSQL FAILED (port mungkin sudah dipakai)'; tail -n 5 /tmp/postgres_pf.log )
+
+	@echo '==========================================================='
+	@echo 'Kubernetes Database Processing DONE'
+	@echo '==========================================================='
+
+DDL:
+	@echo '==========================================================='
+	@echo 'Running DDL (Create Tables)'
+	@echo '==========================================================='
+	@python postgres-scripts/DDL.py
+
+DML:
+	@echo '==========================================================='
+	@echo 'Running DML (Insert Data)'
+	@echo '==========================================================='
+	@python postgres-scripts/DML.py
+
 kubectl-running-batching-k8s:
-	@echo '__________________________________________________________'
+	@echo '==========================================================='
 	@echo 'Running Kubernetes Batching Processing ...'
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/airflow 8085:8080 > /dev/null 2>&1 &
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/spark-worker 9100:9102 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+	@echo 'Starting Airflow port-forward (8085)...'
+	@kubectl port-forward svc/airflow 8085:8080 > /tmp/airflow_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8085' >/dev/null 2>&1 && \
+	echo 'Airflow READY at http://localhost:8085' || \
+	( echo 'Airflow FAILED'; tail -n 5 /tmp/airflow_pf.log )
+
+	@echo 'Starting Spark Worker port-forward (9100)...'
+	@kubectl port-forward svc/spark-worker 9100:9102 > /tmp/spark_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':9100' >/dev/null 2>&1 && \
+	echo 'Spark Worker READY at http://localhost:9100' || \
+	( echo 'Spark Worker FAILED'; tail -n 5 /tmp/spark_pf.log )
+
+	@echo '==========================================================='
+	@echo 'Kubernetes Batching Processing DONE'
 	@echo '==========================================================='
 
 kubectl-running-streaming-k8s:
-	@echo '__________________________________________________________'
+	@echo '==========================================================='
 	@echo 'Running Kubernetes Streaming Processing ...'
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/debezium-ui 8095:8095 > /dev/null 2>&1 &
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/kafka-ui 8087:8087 > /dev/null 2>&1 &
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+	@echo 'Starting Debezium UI port-forward (8095)...'
+	@kubectl port-forward svc/debezium-ui 8095:8095 > /tmp/debezium_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8095' >/dev/null 2>&1 && \
+	echo 'Debezium UI READY at http://localhost:8095' || \
+	( echo 'Debezium UI FAILED'; tail -n 5 /tmp/debezium_pf.log )
+
+	@echo 'Starting Kafka UI port-forward (8087)...'
+	@kubectl port-forward svc/kafka-ui 8087:8087 > /tmp/kafka_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8087' >/dev/null 2>&1 && \
+	echo 'Kafka UI READY at http://localhost:8087' || \
+	( echo 'Kafka UI FAILED'; tail -n 5 /tmp/kafka_pf.log )
+
+	@echo 'Starting Flink JobManager port-forward (8081)...'
+	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /tmp/flink_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8081' >/dev/null 2>&1 && \
+	echo 'Flink JobManager READY at http://localhost:8081' || \
+	( echo 'Flink JobManager FAILED'; tail -n 5 /tmp/flink_pf.log )
+
+	@echo '==========================================================='
+	@echo 'Kubernetes Streaming Processing DONE'
 	@echo '==========================================================='
 
 kubectl-running-monitoring-k8s:
-	@echo '__________________________________________________________'
+	@echo '==========================================================='
 	@echo 'Running Kubernetes Monitoring Processing ...'
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/prometheus 9191:9090 > /dev/null 2>&1 &
-	@echo '__________________________________________________________'
-	@kubectl port-forward svc/grafana 3000:3000 > /dev/null 2>&1 &
+	@echo '==========================================================='
+
+	@echo 'Starting Prometheus port-forward (9191)...'
+	@kubectl port-forward svc/prometheus 9191:9090 > /tmp/prometheus_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':9191' >/dev/null 2>&1 && \
+	echo 'Prometheus READY at http://localhost:9191' || \
+	( echo 'Prometheus FAILED'; tail -n 5 /tmp/prometheus_pf.log )
+
+	@echo 'Starting Grafana port-forward (3000)...'
+	@kubectl port-forward svc/grafana 3000:3000 > /tmp/grafana_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':3000' >/dev/null 2>&1 && \
+	echo 'Grafana READY at http://localhost:3000' || \
+	( echo 'Grafana FAILED'; tail -n 5 /tmp/grafana_pf.log )
+
+	@echo '==========================================================='
+	@echo 'Kubernetes Monitoring Processing DONE'
 	@echo '==========================================================='
 
 clean:

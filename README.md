@@ -64,7 +64,7 @@ Batch objectives
 1. **Clone This Repo** 
 2. **Open Docker Desktop**
 3. **Run Kubernetes**
-- `minikube`
+- `minikube start`
 4. **Run Kubernetes to env**
 - `eval $(minikube docker-env)`
 5. **Run dockerfile postgres** :
@@ -88,6 +88,7 @@ Batch objectives
 * if you want to delete the dataset, run this `terraform destroy`
 
 **Procedure**
+
 11. **Run for step database to active and inactive**
 - `make kubectl-Starting-batching-k8s`
 - `make kubectl-Stopping-batching-k8s`
@@ -105,6 +106,7 @@ Batch objectives
 - `make kubectl-Stopping-monitoring-k8s`
 
 **UI**
+
 15. **Run for UI database**
 - `make kubectl-running-database-k8s`
 
