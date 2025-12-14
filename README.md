@@ -135,21 +135,22 @@ Batch objectives
 
 **additional**
 
--development    = kubectl get deployment
--pods           = kubectl get pods
--service        = kubectl get svc
--ingress        = kubectl get ingress
--configmap      = kubectl get configmap
--secret         = kubectl get secret
--pv and pvc     = kubectl get pv and kubectl get pvc
--all resouces   = kubectl get all
+- development    = kubectl get deployment
+- pods           = kubectl get pods
+- service        = kubectl get svc
+- ingress        = kubectl get ingress
+- configmap      = kubectl get configmap
+- secret         = kubectl get secret
+- pv and pvc     = kubectl get pv and kubectl get pvc
+- all resouces   = kubectl get all
 
 **delete** 
-kubectl delete all --all
-kubectl delete pvc --all
-kubectl delete pv --all
-kubectl delete configmap --all
-kubectl delete secret --all
+
+- kubectl delete all --all
+- kubectl delete pvc --all
+- kubectl delete pv --all
+- kubectl delete configmap --all
+- kubectl delete secret --all
 
 
 # Documentation
