@@ -3,11 +3,14 @@ include .env
 help:
 	@echo "## docker-networks		- Build Docker Networks (amd64)"
 	@echo "## docker-build			- Build Docker Images (amd64)"
+	@echo "## debezium				- Capture database changes in real-time"
 	@echo "## spark					- Run a Spark cluster, rebuild the postgres container, then create the destination tables "
 	@echo "## kafka					- Spinup kafka cluster"
 	@echo "## flink					- Create the destination and transformation tables"
 	@echo "## airflow				- Build to orchestrator"
 	@echo "## postgres				- Run database of relationship"
+	@echo "## dbt					- Create the dimension and fact tables."
+	@echo "## prometheus			- Metrics analysis data"
 	@echo "## grafana				- Monitoring analysis data"
 	@echo "## clean					- Cleanup all running containers related to the challenge."
 
@@ -249,10 +252,13 @@ kubectl-Starting-monitoring-k8s:
 	kubectl scale deployment grafana --replicas=1
 	@echo '==========================================================='
 
+# -------------
+# Kubernetes___UI
+# -------------
+
 kubectl-running-database-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Running Kubernetes Database Processing ...'
-	@echo '__________________________________________________________'
 	@kubectl port-forward svc/pgadmin 8888:80 > /dev/null 2>&1 &
 	@echo '==========================================================='
 
