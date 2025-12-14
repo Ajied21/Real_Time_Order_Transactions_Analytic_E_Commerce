@@ -38,7 +38,7 @@ Batch objectives
 # Data Architecture
 
 <div style="text-align: center;">
-  <img src="./images/Architecture.png" width="750">
+  <img src="./images/Architectures.png" width="750">
 </div>
 
 # Technologies
