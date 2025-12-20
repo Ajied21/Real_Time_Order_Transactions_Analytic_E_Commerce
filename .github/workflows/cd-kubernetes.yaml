@@ -1,0 +1,67 @@
+name: K8s - Scale Container Workloads
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target scale"
+        required: true
+        type: choice
+        options:
+          - all
+          - batching
+          - streaming
+          - database
+          - monitoring
+      action:
+        description: "Action"
+        required: true
+        type: choice
+        options:
+          - down
+          - up
+
+jobs:
+  scale:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.0
+
+      - name: Load kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
+
+      - name: Scale workloads
+        run: |
+          scale_layer () {
+            local layer=$1
+            local replicas=$2
+
+            if [ -d "k8s/$layer/deployments" ]; then
+              echo "Scaling $layer to $replicas"
+              kubectl scale deploy -f k8s/$layer/deployments --replicas=$replicas
+            else
+              echo "Skipping $layer (no deployments)"
+            fi
+          }
+
+          if [ "${{ inputs.action }}" = "down" ]; then
+            REPLICAS=0
+          else
+            REPLICAS=1
+          fi
+
+          if [ "${{ inputs.target }}" = "all" ]; then
+            scale_layer batching $REPLICAS
+            scale_layer streaming $REPLICAS
+            scale_layer database $REPLICAS
+            scale_layer monitoring $REPLICAS
+          else
+            scale_layer ${{ inputs.target }} $REPLICAS
+          fi
