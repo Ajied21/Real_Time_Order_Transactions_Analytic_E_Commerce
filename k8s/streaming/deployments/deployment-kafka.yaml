@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: streaming_kafka
-          imagePullPolicy: Never
+          image: ajied21/kafka:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
             - containerPort: 29093

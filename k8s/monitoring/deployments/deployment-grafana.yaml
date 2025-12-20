@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: monitoring_grafana
-          imagePullPolicy: Never
+          image: ajied21/grafana:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           volumeMounts:

@@ -17,8 +17,8 @@ spec:
       serviceAccountName: prometheus
       containers:
         - name: prometheus
-          image: monitoring_prometheus
-          imagePullPolicy: Never
+          image: ajied21/prometheus:latest
+          imagePullPolicy: IfNotPresent
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"

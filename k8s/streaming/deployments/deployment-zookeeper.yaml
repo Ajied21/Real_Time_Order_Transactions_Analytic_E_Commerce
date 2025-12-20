@@ -15,6 +15,7 @@ spec:
       containers:
         - name: zookeeper
           image: confluentinc/cp-zookeeper:7.9.4
+          imagePullPolicy: Always
           ports:
             - containerPort: 2181
           env:

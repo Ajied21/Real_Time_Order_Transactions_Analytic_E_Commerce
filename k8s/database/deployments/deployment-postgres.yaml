@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: staging_postgres
-          imagePullPolicy: Never
+          image: ajied21/postgres:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
           env:

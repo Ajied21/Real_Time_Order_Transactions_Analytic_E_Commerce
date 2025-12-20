@@ -15,6 +15,7 @@ spec:
       containers:
         - name: schema-registry
           image: confluentinc/cp-schema-registry:7.9.4
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
           env:

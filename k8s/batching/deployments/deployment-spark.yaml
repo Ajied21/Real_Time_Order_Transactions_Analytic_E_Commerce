@@ -29,8 +29,8 @@ spec:
       containers:
         # Spark Master
         - name: spark-master
-          image: batching_spark
-          imagePullPolicy: Never
+          image: ajied21/spark:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: SPARK_MODE
               value: "master"
@@ -58,8 +58,8 @@ spec:
 
         # Spark Worker
         - name: spark-worker
-          image: batching_spark
-          imagePullPolicy: Never
+          image: ajied21/spark:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: SPARK_MODE
               value: "worker"

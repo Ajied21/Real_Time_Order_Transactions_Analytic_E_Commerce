@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
       - name: debezium
-        image: streaming_debezium
-        imagePullPolicy: Never
+        image: ajied21/debezium:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8083
         env:

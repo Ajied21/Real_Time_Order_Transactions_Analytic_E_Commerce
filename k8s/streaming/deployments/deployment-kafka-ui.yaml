@@ -15,6 +15,7 @@ spec:
       containers:
         - name: kafka-ui
           image: provectuslabs/kafka-ui:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8087
           env:

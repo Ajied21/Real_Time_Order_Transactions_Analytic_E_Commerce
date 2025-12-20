@@ -17,8 +17,8 @@ spec:
 
       initContainers:
         - name: airflow-db-migrate
-          image: batching_airflow
-          imagePullPolicy: Never
+          image: ajied21/airflow:latest
+          imagePullPolicy: IfNotPresent
           command: ["airflow", "db", "migrate"]
           envFrom:
             - secretRef:
@@ -53,8 +53,8 @@ spec:
 
       containers:
         - name: airflow-scheduler
-          image: batching_airflow
-          imagePullPolicy: Never
+          image: ajied21/airflow:latest
+          imagePullPolicy: IfNotPresent
           command: ["airflow", "scheduler"]
           envFrom:
             - secretRef:
@@ -92,8 +92,8 @@ spec:
               mountPath: /opt/airflow/.dbt
 
         - name: airflow-apiserver
-          image: batching_airflow
-          imagePullPolicy: Never
+          image: ajied21/airflow:latest
+          imagePullPolicy: IfNotPresent
           command: ["/bin/bash", "/scripts/entrypoint.sh"]
           envFrom:
             - secretRef:

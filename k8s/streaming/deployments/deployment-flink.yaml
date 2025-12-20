@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: jobmanager
-          image: streaming_flink
-          imagePullPolicy: Never
+          image: ajied21/flink:latest
+          imagePullPolicy: IfNotPresent
           args: ["jobmanager"]
           ports:
             - containerPort: 6123
@@ -50,8 +50,8 @@ spec:
     spec:
       containers:
         - name: taskmanager
-          image: streaming_flink
-          imagePullPolicy: Never
+          image: ajied21/flink:latest
+          imagePullPolicy: IfNotPresent
           args: ["taskmanager"]
           ports:
             - containerPort: 6121
