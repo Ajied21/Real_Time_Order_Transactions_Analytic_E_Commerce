@@ -11,22 +11,31 @@ on:
           - push
           - delete
       tag:
-        description: "Docker tag (for delete)"
+        description: "Docker tag (used for delete)"
         required: false
         default: "latest"
 
 # ======================
-# START JOB
+# START
 # ======================
 jobs:
   start:
     runs-on: ubuntu-latest
     steps:
-      - name: Start Workflow
-        run: echo "🚀 Workflow started"
+      - name: Start workflow
+        run: echo "Workflow started"
 
 # ======================
-# PUSH JOB
+# CHOOSE JOB
+# ======================
+  choice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Choose Push and Delete Workflow
+        run: echo "Workflow Choosed Push and Delete"
+
+# ======================
+# PUSH IMAGES
 # ======================
   push-images:
     needs: start
@@ -56,14 +65,16 @@ jobs:
 
       - name: Build & Push Image
         run: |
+          echo "📦 Building ${{ matrix.service }}"
           docker build \
             -f docker/Dockerfile.${{ matrix.service }} \
             -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest .
 
+          echo "🚀 Pushing ${{ matrix.service }}"
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
 
 # ======================
-# DELETE JOB
+# DELETE IMAGES (TAG)
 # ======================
   delete-images:
     needs: start
@@ -83,22 +94,51 @@ jobs:
           - spark
 
     steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Get Docker Hub Token
         run: |
           TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
             -H "Content-Type: application/json" \
             -d '{"username": "${{ secrets.DOCKER_USERNAME }}", "password": "${{ secrets.DOCKER_PASSWORD }}"}' \
             | jq -r .token)
+
+          if [ "$TOKEN" = "null" ]; then
+            echo "❌ Failed to get Docker Hub token"
+            exit 1
+          fi
+
           echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Delete Docker Hub Image Tag
         run: |
-          curl -X DELETE \
+          echo "🗑 Deleting tag '${{ github.event.inputs.tag }}' for ${{ matrix.service }}"
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
             -H "Authorization: JWT $TOKEN" \
-            https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/${{ github.event.inputs.tag }}/
+            https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/${{ github.event.inputs.tag }}/)
+
+          echo "HTTP STATUS: $STATUS"
+
+          if [ "$STATUS" != "204" ]; then
+            echo "❌ Failed to delete tag"
+            exit 1
+          fi
+
+          echo "✅ Tag deleted successfully"
 
 # ======================
-# END JOB
+# PROCESS JOB
+# ======================
+  on-process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Progress Workflow
+        run: echo "Workflow processed"
+
+# ======================
+# END
 # ======================
   end:
     needs:
@@ -107,5 +147,5 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: End Workflow
-        run: echo "✅ Workflow finished"
+      - name: End workflow
+        run: echo "Workflow finished"
