@@ -76,7 +76,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
 
 # ======================
-# DELETE IMAGES (TAG)
+# DELETE IMAGES
 # ======================
   delete-images:
     needs: choice
@@ -113,22 +113,29 @@ jobs:
 
           echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Delete Docker Hub Image Tag
+      - name: Delete ALL Tags (Repository will disappear)
         run: |
-          echo "🗑 Deleting tag '${{ github.event.inputs.tag }}' for ${{ matrix.service }}"
+          echo "📥 Fetching tags for ${{ matrix.service }}"
 
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+          TAGS=$(curl -s \
             -H "Authorization: JWT $TOKEN" \
-            https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/${{ github.event.inputs.tag }}/)
+            https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/?page_size=100 \
+            | jq -r '.results[].name')
 
-          echo "HTTP STATUS: $STATUS"
-
-          if [ "$STATUS" != "204" ]; then
-            echo "❌ Failed to delete tag"
-            exit 1
+          if [ -z "$TAGS" ]; then
+            echo "⚠️ No tags found, repository already empty"
+            exit 0
           fi
 
-          echo "✅ Tag deleted successfully"
+          for TAG in $TAGS; do
+            echo "🗑 Deleting tag: $TAG"
+            curl -s -X DELETE \
+              -H "Authorization: JWT $TOKEN" \
+              https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/$TAG/
+          done
+
+          echo "✅ All tags deleted for ${{ matrix.service }}"
+          echo "🧨 Repository will disappear automatically"
 
 # ======================
 # PROCESS JOB
