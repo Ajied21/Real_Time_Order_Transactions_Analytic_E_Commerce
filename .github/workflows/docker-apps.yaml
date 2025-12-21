@@ -29,6 +29,8 @@ jobs:
 # CHOOSE JOB
 # ======================
   choice:
+    needs: start
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Choose Push and Delete Workflow
@@ -38,7 +40,7 @@ jobs:
 # PUSH IMAGES
 # ======================
   push-images:
-    needs: start
+    needs: choice
     if: github.event.inputs.action == 'push'
     runs-on: ubuntu-latest
 
@@ -77,7 +79,7 @@ jobs:
 # DELETE IMAGES (TAG)
 # ======================
   delete-images:
-    needs: start
+    needs: choice
     if: github.event.inputs.action == 'delete'
     runs-on: ubuntu-latest
 
@@ -132,6 +134,10 @@ jobs:
 # PROCESS JOB
 # ======================
   on-process:
+    needs:
+      - push-images
+      - delete-images
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Progress Workflow
@@ -142,8 +148,7 @@ jobs:
 # ======================
   end:
     needs:
-      - push-images
-      - delete-images
+      - on-process
     if: always()
     runs-on: ubuntu-latest
     steps:
