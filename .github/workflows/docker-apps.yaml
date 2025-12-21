@@ -1,0 +1,111 @@
+name: Automation Push & Delete Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose action"
+        required: true
+        type: choice
+        options:
+          - push
+          - delete
+      tag:
+        description: "Docker tag (for delete)"
+        required: false
+        default: "latest"
+
+# ======================
+# START JOB
+# ======================
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start Workflow
+        run: echo "🚀 Workflow started"
+
+# ======================
+# PUSH JOB
+# ======================
+  push-images:
+    needs: start
+    if: github.event.inputs.action == 'push'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - airflow
+          - debezium
+          - flink
+          - grafana
+          - kafka
+          - postgres
+          - prometheus
+          - spark
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & Push Image
+        run: |
+          docker build \
+            -f docker/Dockerfile.${{ matrix.service }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest .
+
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
+
+# ======================
+# DELETE JOB
+# ======================
+  delete-images:
+    needs: start
+    if: github.event.inputs.action == 'delete'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - airflow
+          - debezium
+          - flink
+          - grafana
+          - kafka
+          - postgres
+          - prometheus
+          - spark
+
+    steps:
+      - name: Get Docker Hub Token
+        run: |
+          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
+            -H "Content-Type: application/json" \
+            -d '{"username": "${{ secrets.DOCKER_USERNAME }}", "password": "${{ secrets.DOCKER_PASSWORD }}"}' \
+            | jq -r .token)
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Delete Docker Hub Image Tag
+        run: |
+          curl -X DELETE \
+            -H "Authorization: JWT $TOKEN" \
+            https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}/tags/${{ github.event.inputs.tag }}/
+
+# ======================
+# END JOB
+# ======================
+  end:
+    needs:
+      - push-images
+      - delete-images
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: End Workflow
+        run: echo "✅ Workflow finished"
