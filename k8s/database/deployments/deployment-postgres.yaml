@@ -36,6 +36,8 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_DB
+            - name: POSTGRES_INITDB_ARGS
+              value: "--wal-level=logical"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data

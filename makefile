@@ -169,6 +169,24 @@ kubectl-database-k8s:
 	@kubectl apply -R -f k8s/database/
 	@echo '==========================================================='
 
+kubectl-Stopping-database-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Stopping Kubernetes Database ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment postgres --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment pgadmin --replicas=0
+	@echo '==========================================================='
+
+kubectl-Starting-database-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Starting Kubernetes Database ...'
+	@echo '__________________________________________________________'
+	@kubectl scale deployment postgres --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment pgadmin --replicas=1
+	@echo '==========================================================='
+
 kubectl-batching-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Apply Kubernetes Batching Processing ...'
@@ -212,6 +230,16 @@ kubectl-Stopping-streaming-k8s:
 	kubectl scale deployment kafka --replicas=0
 	@echo '__________________________________________________________'
 	kubectl scale deployment kafka-ui --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment flink-jobmanager --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment flink-taskmanager --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment ksqldb-server --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment schema-registry --replicas=0
+	@echo '__________________________________________________________'
+	kubectl scale deployment zookeeper --replicas=0
 	@echo '==========================================================='
 
 kubectl-Starting-streaming-k8s:
@@ -220,11 +248,17 @@ kubectl-Starting-streaming-k8s:
 	@echo '__________________________________________________________'
 	@kubectl scale deployment debezium --replicas=1
 	@echo '__________________________________________________________'
-	kubectl scale deployment debezium-ui --replicas=1
-	@echo '__________________________________________________________'
-	@kubectl scale deployment kafka --replicas=1
+	kubectl scale deployment kafka --replicas=1
 	@echo '__________________________________________________________'
 	kubectl scale deployment kafka-ui --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment flink-jobmanager --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment flink-taskmanager --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment schema-registry --replicas=1
+	@echo '__________________________________________________________'
+	kubectl scale deployment zookeeper --replicas=1
 	@echo '==========================================================='
 
 kubectl-monitoring-k8s:
@@ -291,6 +325,21 @@ DML:
 	@echo '==========================================================='
 	@python postgres-scripts/DML.py
 
+kubectl-stop-database-k8s:
+	@echo '==========================================================='
+	@echo 'Stopping Kubernetes Database Port-Forward...'
+	@echo '==========================================================='
+
+	@echo 'Stopping pgAdmin port-forward (8888)...'
+	@pkill -f "kubectl port-forward svc/pgadmin 8888:80" && \
+	echo 'pgAdmin port-forward STOPPED' || \
+	echo 'pgAdmin port-forward not running'
+
+	@echo 'Stopping PostgreSQL port-forward (5432)...'
+	@pkill -f "kubectl port-forward svc/postgres 5432:5432" && \
+	echo 'PostgreSQL port-forward STOPPED' || \
+	echo 'PostgreSQL port-forward not running'
+
 kubectl-running-batching-k8s:
 	@echo '==========================================================='
 	@echo 'Running Kubernetes Batching Processing ...'
@@ -303,12 +352,12 @@ kubectl-running-batching-k8s:
 	echo 'Airflow READY at http://localhost:8085' || \
 	( echo 'Airflow FAILED'; tail -n 5 /tmp/airflow_pf.log )
 
-	@echo 'Starting Spark Worker port-forward (9100)...'
-	@kubectl port-forward svc/spark-worker 9100:9102 > /tmp/spark_pf.log 2>&1 & \
+	@echo 'Starting Spark port-forward (9100)...'
+	@kubectl port-forward svc/spark 9100:8080 > /tmp/spark_pf.log 2>&1 & \
 	sleep 3 && \
 	netstat -ano | grep ':9100' >/dev/null 2>&1 && \
-	echo 'Spark Worker READY at http://localhost:9100' || \
-	( echo 'Spark Worker FAILED'; tail -n 5 /tmp/spark_pf.log )
+	echo 'Spark READY at http://localhost:9100' || \
+	( echo 'Spark FAILED'; tail -n 5 /tmp/spark_pf.log )
 
 	@echo '==========================================================='
 	@echo 'Kubernetes Batching Processing DONE'
@@ -319,12 +368,12 @@ kubectl-running-streaming-k8s:
 	@echo 'Running Kubernetes Streaming Processing ...'
 	@echo '==========================================================='
 
-	@echo 'Starting Debezium UI port-forward (8095)...'
-	@kubectl port-forward svc/debezium-ui 8095:8095 > /tmp/debezium_pf.log 2>&1 & \
+	@echo 'Starting Debezium port-forward (8083)...'
+	@kubectl port-forward svc/debezium 8083:8083 > /tmp/debezium_pf.log 2>&1 & \
 	sleep 3 && \
 	netstat -ano | grep ':8095' >/dev/null 2>&1 && \
-	echo 'Debezium UI READY at http://localhost:8095' || \
-	( echo 'Debezium UI FAILED'; tail -n 5 /tmp/debezium_pf.log )
+	echo 'Debezium READY at http://localhost:8083' || \
+	( echo 'Debezium FAILED'; tail -n 5 /tmp/debezium_pf.log )
 
 	@echo 'Starting Kafka UI port-forward (8087)...'
 	@kubectl port-forward svc/kafka-ui 8087:8087 > /tmp/kafka_pf.log 2>&1 & \
@@ -333,12 +382,12 @@ kubectl-running-streaming-k8s:
 	echo 'Kafka UI READY at http://localhost:8087' || \
 	( echo 'Kafka UI FAILED'; tail -n 5 /tmp/kafka_pf.log )
 
-	@echo 'Starting Flink JobManager port-forward (8081)...'
-	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /tmp/flink_pf.log 2>&1 & \
-	sleep 3 && \
-	netstat -ano | grep ':8081' >/dev/null 2>&1 && \
-	echo 'Flink JobManager READY at http://localhost:8081' || \
-	( echo 'Flink JobManager FAILED'; tail -n 5 /tmp/flink_pf.log )
+# 	@echo 'Starting Flink JobManager port-forward (8081)...'
+# 	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /tmp/flink_pf.log 2>&1 & \
+# 	sleep 3 && \
+# 	netstat -ano | grep ':8081' >/dev/null 2>&1 && \
+# 	echo 'Flink JobManager READY at http://localhost:8081' || \
+# 	( echo 'Flink JobManager FAILED'; tail -n 5 /tmp/flink_pf.log )
 
 	@echo '==========================================================='
 	@echo 'Kubernetes Streaming Processing DONE'

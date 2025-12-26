@@ -26,7 +26,7 @@ spec:
 
         # Storage Topics
         - name: CONNECT_GROUP_ID
-          value: "1"
+          value: "debezium-connect-cluster"
         - name: CONNECT_CONFIG_STORAGE_TOPIC
           value: "_debezium_config"
         - name: CONNECT_OFFSET_STORAGE_TOPIC
