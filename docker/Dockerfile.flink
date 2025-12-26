@@ -2,25 +2,35 @@ FROM apache/flink:2.1.1-scala_2.12-java17
 
 USER root
 
+# ===============================
+# Install Python & pip
+# ===============================
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y python3 python3-pip curl && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
-# ===== DOWNLOAD KAFKA CONNECTOR FLINK 2.1.1 (UBER JAR) =====
+# ===============================
+# Install PyFlink (HARUS sama versi Flink)
+# ===============================
+RUN pip3 install apache-flink==2.1.1
+
+# ===============================
+# Kafka Connector Flink
+# ===============================
 RUN curl -L -o /opt/flink/lib/flink-sql-connector-kafka-2.1.1.jar \
     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/2.1.1/flink-sql-connector-kafka-2.1.1.jar
 
-# ===== DOWNLOAD AVRO + SCHEMA-REGISTRY =====
+# ===============================
+# (Optional) Avro / Schema Registry
+# ===============================
 RUN curl -L -o /opt/flink/lib/kafka-schema-registry-client-7.6.1.jar \
-    https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.6.1/kafka-schema-registry-client-7.6.1.jar
-
-RUN curl -L -o /opt/flink/lib/kafka-avro-serializer-7.6.1.jar \
-    https://packages.confluent.io/maven/io/confluent/kafka-avro-serializer/7.6.1/kafka-avro-serializer-7.6.1.jar
-
-RUN curl -L -o /opt/flink/lib/common-config-7.6.1.jar \
-    https://packages.confluent.io/maven/io/confluent/common-config/7.6.1/common-config-7.6.1.jar
-
-RUN curl -L -o /opt/flink/lib/common-utils-7.6.1.jar \
+    https://packages.confluent.io/maven/io/confluent/kafka-schema-registry-client/7.6.1/kafka-schema-registry-client-7.6.1.jar && \
+    curl -L -o /opt/flink/lib/kafka-avro-serializer-7.6.1.jar \
+    https://packages.confluent.io/maven/io/confluent/kafka-avro-serializer/7.6.1/kafka-avro-serializer-7.6.1.jar && \
+    curl -L -o /opt/flink/lib/common-config-7.6.1.jar \
+    https://packages.confluent.io/maven/io/confluent/common-config/7.6.1/common-config-7.6.1.jar && \
+    curl -L -o /opt/flink/lib/common-utils-7.6.1.jar \
     https://packages.confluent.io/maven/io/confluent/common-utils/7.6.1/common-utils-7.6.1.jar
 
 EXPOSE 8081

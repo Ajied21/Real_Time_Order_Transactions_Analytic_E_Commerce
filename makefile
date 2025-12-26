@@ -393,6 +393,22 @@ kubectl-running-streaming-k8s:
 	@echo 'Kubernetes Streaming Processing DONE'
 	@echo '==========================================================='
 
+kubectl-running-streaming-Flink-k8s:
+	@echo '==========================================================='
+	@echo 'Running Kubernetes Streaming Flink Processing ...'
+	@echo '==========================================================='
+
+	@echo 'Starting Flink JobManager port-forward (8081)...'
+	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /tmp/flink_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':8081' >/dev/null 2>&1 && \
+	echo 'Flink JobManager READY at http://localhost:8081' || \
+	( echo 'Flink JobManager FAILED'; tail -n 5 /tmp/flink_pf.log )
+
+	@echo '==========================================================='
+	@echo 'Kubernetes Streaming Processing DONE'
+	@echo '==========================================================='
+
 kubectl-running-monitoring-k8s:
 	@echo '==========================================================='
 	@echo 'Running Kubernetes Monitoring Processing ...'
