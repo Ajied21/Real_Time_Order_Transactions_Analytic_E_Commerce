@@ -10,17 +10,18 @@ spec:
       port: 5432
       targetPort: 5432
   type: ClusterIP
-
+  
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: pgadmin
 spec:
+  type: NodePort
   selector:
     app: pgadmin
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: ClusterIP
+      nodePort: 30080

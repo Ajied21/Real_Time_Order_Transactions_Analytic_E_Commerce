@@ -296,14 +296,14 @@ kubectl-running-database-k8s:
 	@echo '==========================================================='
 
 	@echo 'Starting pgAdmin port-forward (8888)...'
-	@kubectl port-forward svc/pgadmin 8888:80 > /tmp/pgadmin_pf.log 2>&1 & \
+	@kubectl port-forward svc/pgadmin 30080:80 > /tmp/pgadmin_pf.log 2>&1 & \
 	sleep 3 && \
 	netstat -ano | grep ':8888' >/dev/null 2>&1 && \
 	echo 'pgAdmin READY at http://localhost:8888' || \
 	( echo 'pgAdmin FAILED'; tail -n 5 /tmp/pgadmin_pf.log )
 
 	@echo 'Starting PostgreSQL port-forward (5432)...'
-	@kubectl port-forward svc/postgres 5432:5432 > /tmp/postgres_pf.log 2>&1 & \
+	@kubectl port-forward svc/postgres 30432:5432 > /tmp/postgres_pf.log 2>&1 & \
 	sleep 3 && \
 	netstat -ano | grep ':5432' >/dev/null 2>&1 && \
 	echo 'PostgreSQL READY at localhost:5432' || \
@@ -381,13 +381,6 @@ kubectl-running-streaming-k8s:
 	netstat -ano | grep ':8087' >/dev/null 2>&1 && \
 	echo 'Kafka UI READY at http://localhost:8087' || \
 	( echo 'Kafka UI FAILED'; tail -n 5 /tmp/kafka_pf.log )
-
-# 	@echo 'Starting Flink JobManager port-forward (8081)...'
-# 	@kubectl port-forward svc/flink-jobmanager 8081:8081 > /tmp/flink_pf.log 2>&1 & \
-# 	sleep 3 && \
-# 	netstat -ano | grep ':8081' >/dev/null 2>&1 && \
-# 	echo 'Flink JobManager READY at http://localhost:8081' || \
-# 	( echo 'Flink JobManager FAILED'; tail -n 5 /tmp/flink_pf.log )
 
 	@echo '==========================================================='
 	@echo 'Kubernetes Streaming Processing DONE'
