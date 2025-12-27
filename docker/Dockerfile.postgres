@@ -1,10 +1,16 @@
 FROM postgres:15
 
-# Define the directory where PostgreSQL stores its data
 ENV PGDATA=/var/lib/postgresql/data/pgdata
 
-# Set appropriate permissions for the initialization directory
-RUN chmod -R 755 /docker-entrypoint-initdb.d
+# Copy config dari subfolder scripts
+COPY scripts/postgresql.conf /etc/postgresql/postgresql.conf
 
-# Expose PostgreSQL’s default port
+# Permission aman
+RUN chown postgres:postgres /etc/postgresql/postgresql.conf
+
+USER postgres
+
 EXPOSE 5432
+
+# Pakai config custom
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
