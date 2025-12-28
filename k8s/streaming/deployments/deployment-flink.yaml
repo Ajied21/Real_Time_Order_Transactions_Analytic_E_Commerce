@@ -26,10 +26,24 @@ spec:
             - name: flink-config
               mountPath: /opt/flink/conf/flink-conf.yaml
               subPath: flink-conf.yaml
+
+            - name: flink-scripts
+              mountPath: /opt/flink/flink-scripts
+
+            - name: flink-output
+              mountPath: /opt/flink/output
       volumes:
         - name: flink-config
           configMap:
             name: flink-conf
+
+        - name: flink-scripts
+          persistentVolumeClaim:
+            claimName: flink-scripts-pvc
+
+        - name: flink-output
+          persistentVolumeClaim:
+            claimName: flink-output-pvc
 
 ---
 apiVersion: apps/v1
@@ -59,7 +73,21 @@ spec:
             - name: flink-config
               mountPath: /opt/flink/conf/flink-conf.yaml
               subPath: flink-conf.yaml
+
+            - name: flink-scripts
+              mountPath: /opt/flink/flink-scripts
+
+            - name: flink-output
+              mountPath: /opt/flink/output
       volumes:
         - name: flink-config
           configMap:
             name: flink-conf
+
+        - name: flink-scripts
+          persistentVolumeClaim:
+            claimName: flink-scripts-pvc
+
+        - name: flink-output
+          persistentVolumeClaim:
+            claimName: flink-output-pvc

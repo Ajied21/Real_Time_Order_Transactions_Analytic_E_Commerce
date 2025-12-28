@@ -16,7 +16,13 @@ RUN apt-get update && \
 RUN pip3 install apache-flink==2.1.1
 
 # ===============================
-# Kafka Connector Flink
+# Kafka Connector (DataStream API - WAJIB)
+# ===============================
+RUN curl -L -o /opt/flink/lib/flink-connector-kafka-2.1.1.jar \
+    https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/2.1.1/flink-connector-kafka-2.1.1.jar
+
+# ===============================
+# (Optional) SQL Connector (boleh kalau pakai Flink SQL)
 # ===============================
 RUN curl -L -o /opt/flink/lib/flink-sql-connector-kafka-2.1.1.jar \
     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/2.1.1/flink-sql-connector-kafka-2.1.1.jar

@@ -60,4 +60,4 @@ spec:
 
         # Plugin Path
         - name: CONNECT_PLUGIN_PATH
-          value: "/opt/connectors"
+          value: "/kafka/connect"

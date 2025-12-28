@@ -4,5 +4,7 @@ metadata:
   name: postgres-db-sql
 data:
   create-multiple-dbs.sql: |
+    ALTER SYSTEM SET wal_level = 'logical';
+
     CREATE DATABASE data_staging;
     CREATE DATABASE backup;

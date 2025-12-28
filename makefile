@@ -175,7 +175,7 @@ kubectl-Stopping-database-k8s:
 	@echo '__________________________________________________________'
 	@kubectl scale deployment postgres --replicas=0
 	@echo '__________________________________________________________'
-	kubectl scale deployment pgadmin --replicas=0
+	@kubectl scale deployment pgadmin --replicas=0
 	@echo '==========================================================='
 
 kubectl-Starting-database-k8s:
@@ -184,7 +184,7 @@ kubectl-Starting-database-k8s:
 	@echo '__________________________________________________________'
 	@kubectl scale deployment postgres --replicas=1
 	@echo '__________________________________________________________'
-	kubectl scale deployment pgadmin --replicas=1
+	@kubectl scale deployment pgadmin --replicas=1
 	@echo '==========================================================='
 
 kubectl-batching-k8s:
@@ -225,8 +225,6 @@ kubectl-Stopping-streaming-k8s:
 	@echo '__________________________________________________________'
 	@kubectl scale deployment debezium --replicas=0
 	@echo '__________________________________________________________'
-	@kubectl scale deployment debezium-ui --replicas=0
-	@echo '__________________________________________________________'
 	kubectl scale deployment kafka --replicas=0
 	@echo '__________________________________________________________'
 	kubectl scale deployment kafka-ui --replicas=0
@@ -235,11 +233,7 @@ kubectl-Stopping-streaming-k8s:
 	@echo '__________________________________________________________'
 	kubectl scale deployment flink-taskmanager --replicas=0
 	@echo '__________________________________________________________'
-	kubectl scale deployment ksqldb-server --replicas=0
-	@echo '__________________________________________________________'
 	kubectl scale deployment schema-registry --replicas=0
-	@echo '__________________________________________________________'
-	kubectl scale deployment zookeeper --replicas=0
 	@echo '==========================================================='
 
 kubectl-Starting-streaming-k8s:
@@ -257,8 +251,6 @@ kubectl-Starting-streaming-k8s:
 	kubectl scale deployment flink-taskmanager --replicas=1
 	@echo '__________________________________________________________'
 	kubectl scale deployment schema-registry --replicas=1
-	@echo '__________________________________________________________'
-	kubectl scale deployment zookeeper --replicas=1
 	@echo '==========================================================='
 
 kubectl-monitoring-k8s:
@@ -295,15 +287,8 @@ kubectl-running-database-k8s:
 	@echo 'Running Kubernetes Database Processing ...'
 	@echo '==========================================================='
 
-	@echo 'Starting pgAdmin port-forward (8888)...'
-	@kubectl port-forward svc/pgadmin 30080:80 > /tmp/pgadmin_pf.log 2>&1 & \
-	sleep 3 && \
-	netstat -ano | grep ':8888' >/dev/null 2>&1 && \
-	echo 'pgAdmin READY at http://localhost:8888' || \
-	( echo 'pgAdmin FAILED'; tail -n 5 /tmp/pgadmin_pf.log )
-
 	@echo 'Starting PostgreSQL port-forward (5432)...'
-	@kubectl port-forward svc/postgres 30432:5432 > /tmp/postgres_pf.log 2>&1 & \
+	@kubectl port-forward svc/postgres 5432:5432 > /tmp/postgres_pf.log 2>&1 & \
 	sleep 3 && \
 	netstat -ano | grep ':5432' >/dev/null 2>&1 && \
 	echo 'PostgreSQL READY at localhost:5432' || \
@@ -374,13 +359,6 @@ kubectl-running-streaming-k8s:
 	netstat -ano | grep ':8095' >/dev/null 2>&1 && \
 	echo 'Debezium READY at http://localhost:8083' || \
 	( echo 'Debezium FAILED'; tail -n 5 /tmp/debezium_pf.log )
-
-	@echo 'Starting Kafka UI port-forward (8087)...'
-	@kubectl port-forward svc/kafka-ui 8087:8087 > /tmp/kafka_pf.log 2>&1 & \
-	sleep 3 && \
-	netstat -ano | grep ':8087' >/dev/null 2>&1 && \
-	echo 'Kafka UI READY at http://localhost:8087' || \
-	( echo 'Kafka UI FAILED'; tail -n 5 /tmp/kafka_pf.log )
 
 	@echo '==========================================================='
 	@echo 'Kubernetes Streaming Processing DONE'
