@@ -302,13 +302,17 @@ DDL:
 	@echo '==========================================================='
 	@echo 'Running DDL (Create Tables)'
 	@echo '==========================================================='
-	@python postgres-scripts/DDL.py
+	@python postgres-scripts/ddl-data_staging.py
+	@echo '==========================================================='
+	@python postgres-scripts/ddl-data_lake.py
 
 DML:
 	@echo '==========================================================='
 	@echo 'Running DML (Insert Data)'
 	@echo '==========================================================='
-	@python postgres-scripts/DML.py
+	@python postgres-scripts/dml-data_staging.py
+#	@echo '==========================================================='
+#	@python postgres-scripts/dml-data_lake.py
 
 kubectl-stop-database-k8s:
 	@echo '==========================================================='
@@ -356,7 +360,7 @@ kubectl-running-streaming-k8s:
 	@echo 'Starting Debezium port-forward (8083)...'
 	@kubectl port-forward svc/debezium 8083:8083 > /tmp/debezium_pf.log 2>&1 & \
 	sleep 3 && \
-	netstat -ano | grep ':8095' >/dev/null 2>&1 && \
+	netstat -ano | grep ':8083' >/dev/null 2>&1 && \
 	echo 'Debezium READY at http://localhost:8083' || \
 	( echo 'Debezium FAILED'; tail -n 5 /tmp/debezium_pf.log )
 

@@ -138,7 +138,7 @@ def create_bronze_tables():
     for q in queries:
         cur.execute(q)
 
-    print("✅ Bronze RAW tables created successfully")
+    print("✅ Bronze RAW tables created successfully at data staging")
 
 
 if __name__ == "__main__":

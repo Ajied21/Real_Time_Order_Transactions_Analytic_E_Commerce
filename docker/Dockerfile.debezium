@@ -1,18 +1,12 @@
-FROM confluentinc/cp-kafka-connect:7.9.4
+FROM debezium/connect:2.6
 
+# Pakai root hanya kalau perlu debug / install tools tambahan
 USER root
 
-# Copy connector Debezium dari folder local
-COPY ./scripts/*.tar.gz /tmp/
+# (OPSIONAL) install tool bantu untuk debug
+RUN microdnf install -y curl jq && microdnf clean all
 
-# Extract semua plugin
-RUN mkdir -p /opt/connectors && \
-    for f in /tmp/*.tar.gz; do \
-        echo "Extracting $f ..."; \
-        tar -xzf "$f" -C /opt/connectors; \
-    done && \
-    rm -f /tmp/*.tar.gz
-
-ENV CONNECT_PLUGIN_PATH=/opt/connectors
+# Kembalikan ke user default
+USER kafka
 
 EXPOSE 8083

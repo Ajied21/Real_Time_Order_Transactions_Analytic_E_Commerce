@@ -1,5 +1,5 @@
 {
-  "name": "orders-cdc-connector",
+  "name": "data_staging-cdc-connector",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
 
@@ -14,7 +14,7 @@
 
     "table.include.list": "public.bronze_customer_raw,public.bronze_orders_raw,public.bronze_payments_raw,public.bronze_shipping_raw,public.bronze_product_raw",
 
-    "slot.name": "orders_slot",
+    "slot.name": "data_staging_slot",
     "publication.autocreate.mode": "filtered",
 
     "snapshot.mode": "initial",
