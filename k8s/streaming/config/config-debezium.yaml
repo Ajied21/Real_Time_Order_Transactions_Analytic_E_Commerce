@@ -21,7 +21,7 @@ data:
         "table.include.list": "public.bronze_customer_raw,public.bronze_orders_raw,public.bronze_payments_raw,public.bronze_shipping_raw,public.bronze_product_raw",
 
         "slot.name": "data_lake_slot",
-        "publication.autocreate.mode": "filtered",
+        "publication.autocreate.mode": "all_tables",
 
         "snapshot.mode": "initial",
         "tombstones.on.delete": "false"
@@ -46,7 +46,7 @@ data:
         "table.include.list": "public.bronze_customer_raw,public.bronze_orders_raw,public.bronze_payments_raw,public.bronze_shipping_raw,public.bronze_product_raw",
 
         "slot.name": "data_staging_slot",
-        "publication.autocreate.mode": "filtered",
+        "publication.autocreate.mode": "all_tables",
 
         "snapshot.mode": "initial",
         "tombstones.on.delete": "false"
