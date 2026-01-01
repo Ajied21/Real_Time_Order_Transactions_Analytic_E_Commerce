@@ -1,8 +1,8 @@
 from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.datastream.connectors.kafka import KafkaSource
 from pyflink.common.serialization import SimpleStringSchema
-from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.common import Types
+from pyflink.common.watermark_strategy import WatermarkStrategy
 import json
 import datetime
 
@@ -13,14 +13,14 @@ source = KafkaSource.builder() \
     .set_bootstrap_servers("kafka:9092") \
     .set_topics("data_staging.public.bronze_orders_raw") \
     .set_group_id("flink-orders-consumer") \
-    .set_starting_offsets(KafkaSource.builder().OffsetsInitializer.earliest()) \
+    .set_starting_offsets(KafkaSource.OffsetInitializer.earliest()) \
     .set_value_only_deserializer(SimpleStringSchema()) \
     .build()
 
 stream = env.from_source(
     source,
     WatermarkStrategy.no_watermarks(),
-    "Kafka Orders Source"
+    "Kafka Source"
 )
 
 def extract_after(value):

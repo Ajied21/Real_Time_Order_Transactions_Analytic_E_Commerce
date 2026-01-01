@@ -1,0 +1,24 @@
+run architecture
+
+data sources !!!
+- make kubectl-database-k8s
+- make kubectl-running-database-k8s
+- make DDL
+- make DML
+- kubectl scale deployment postgres --replicas=1
+- kubectl scale deployment postgres --replicas=0
+
+data streaming !!!
+run bareng :
+make kubectl-streaming-delete-connector-k8s
+make kubectl-streaming-k8s
+
+- make kubectl-running-streaming-debezium-k8s
+- make kubectl-running-streaming-Flink-k8s
+- make kubectl-Starting-streaming-k8s
+- make kubectl-Stopping-streaming-k8s
+
+data batching !!!
+- make kubectl-batching-k8s
+- make kubectl-Starting-batching-k8s
+- make kubectl-Stopping-batching-k8s

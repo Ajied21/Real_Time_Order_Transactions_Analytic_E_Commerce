@@ -7,17 +7,20 @@ RUN apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
-# PyFlink runtime dependencies (AMAN)
 RUN pip3 install --no-cache-dir \
     typing_extensions \
     cloudpickle \
     py4j
 
-# Kafka DataStream connector
+# Kafka connector
 RUN curl -L -o /opt/flink/lib/flink-connector-kafka-2.1.1.jar \
     https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka/2.1.1/flink-connector-kafka-2.1.1.jar
 
-# (Optional) SQL connector
+# Kafka clients (WAJIB)
+RUN curl -L -o /opt/flink/lib/kafka-clients-3.7.0.jar \
+    https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.7.0/kafka-clients-3.7.0.jar
+
+# SQL connector (optional)
 RUN curl -L -o /opt/flink/lib/flink-sql-connector-kafka-2.1.1.jar \
     https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/2.1.1/flink-sql-connector-kafka-2.1.1.jar
 
