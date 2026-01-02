@@ -23,9 +23,9 @@ spec:
             - containerPort: 6123
             - containerPort: 8081
           volumeMounts:
+            # ✅ MOUNT KE FOLDER (WAJIB)
             - name: flink-config
-              mountPath: /opt/flink/conf/flink-conf.yaml
-              subPath: flink-conf.yaml
+              mountPath: /opt/flink/conf
 
             - name: flink-scripts
               mountPath: /opt/flink/flink-scripts
@@ -70,9 +70,9 @@ spec:
           ports:
             - containerPort: 6121
           volumeMounts:
+            # ✅ MOUNT KE FOLDER (WAJIB)
             - name: flink-config
-              mountPath: /opt/flink/conf/flink-conf.yaml
-              subPath: flink-conf.yaml
+              mountPath: /opt/flink/conf
 
             - name: flink-scripts
               mountPath: /opt/flink/flink-scripts

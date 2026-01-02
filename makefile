@@ -219,6 +219,13 @@ kubectl-streaming-delete-connector-k8s:
 	@kubectl delete job debezium-register-connector
 	@echo '==========================================================='
 
+kubectl-streaming-starting-connector-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Start Connector Debezium Kubernetes Streaming Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -f k8s/streaming/job/job-debezium.yaml
+	@echo '==========================================================='
+
 kubectl-streaming-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Apply Kubernetes Streaming Processing ...'
@@ -230,7 +237,7 @@ kubectl-Stopping-streaming-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Stopping Kubernetes Streaming ...'
 	@echo '__________________________________________________________'
-	@kubectl scale deployment debezium --replicas=0
+	kubectl scale deployment debezium --replicas=0
 	@echo '__________________________________________________________'
 	kubectl scale deployment kafka --replicas=0
 	@echo '__________________________________________________________'
@@ -240,7 +247,7 @@ kubectl-Stopping-streaming-k8s:
 	@echo '__________________________________________________________'
 	kubectl scale deployment flink-taskmanager --replicas=0
 	@echo '__________________________________________________________'
-	kubectl scale job debezium-register-connector --replicas=0
+	kubectl scale debezium-register-connector --replicas=0
 	@echo '__________________________________________________________'
 	kubectl scale deployment schema-registry --replicas=0
 	@echo '==========================================================='
