@@ -368,7 +368,7 @@ kubectl-stop-database-k8s:
 # 	@echo 'Kubernetes Batching Processing DONE'
 # 	@echo '==========================================================='
 
-kubectl-running-streaming-kafka-k8s:
+kubectl-running-streaming-debezium-k8s:
 	@echo '==========================================================='
 	@echo 'Running Kubernetes Streaming Processing ...'
 	@echo '==========================================================='

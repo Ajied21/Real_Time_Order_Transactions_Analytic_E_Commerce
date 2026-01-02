@@ -8,6 +8,8 @@ RUN apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
+RUN pip3 install --no-cache-dir protobuf==4.25.3
+
 # Kafka DataStream Connector (WAJIB untuk PyFlink KafkaSource)
 RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.3.0-1.19.jar \
     https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka/3.3.0-1.19/flink-connector-kafka-3.3.0-1.19.jar

@@ -1,8 +1,13 @@
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.datastream.connectors.kafka import KafkaSource
+from pyflink.datastream.connectors.kafka import (
+    KafkaSource,
+    KafkaOffsetsInitializer
+)
 from pyflink.common.serialization import SimpleStringSchema
-from pyflink.common import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
+from pyflink.common import Types
+from pyflink.datastream.connectors.file_system import FileSink, OutputFileConfig
+from pyflink.common.serialization import Encoder
 import json
 import datetime
 
@@ -13,7 +18,9 @@ source = KafkaSource.builder() \
     .set_bootstrap_servers("kafka:9092") \
     .set_topics("data_staging.public.bronze_orders_raw") \
     .set_group_id("flink-orders-consumer") \
-    .set_starting_offsets(KafkaSource.OffsetInitializer.earliest()) \
+    .set_starting_offsets(
+        KafkaOffsetsInitializer.earliest()
+    ) \
     .set_value_only_deserializer(SimpleStringSchema()) \
     .build()
 
@@ -40,9 +47,19 @@ processed = (
     .filter(lambda x: x is not None)
 )
 
-processed.write_as_text(
-    "/opt/flink/output/orders",
-    file_system_write_mode="OVERWRITE"
-)
+sink = FileSink \
+    .for_row_format(
+        base_path="/opt/flink/output/orders",
+        encoder=Encoder.simple_string_encoder("UTF-8")
+    ) \
+    .with_output_file_config(
+        OutputFileConfig.builder()
+        .with_part_prefix("orders")
+        .with_part_suffix(".json")
+        .build()
+    ) \
+    .build()
+
+processed.sink_to(sink)
 
 env.execute("Debezium Orders Kafka → JSON Files")
