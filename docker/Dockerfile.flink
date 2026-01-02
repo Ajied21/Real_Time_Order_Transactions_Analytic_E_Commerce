@@ -2,21 +2,24 @@ FROM apache/flink:1.19.3
 
 USER root
 
+# Python untuk PyFlink
 RUN apt-get update && \
     apt-get install -y python3 python3-pip curl && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean
 
-# Kafka connector Flink 1.19.3
-RUN curl -L -o /opt/flink/lib/flink-connector-kafka_2.12-1.19.3.jar \
-    https://repo1.maven.org/maven2/org/apache/flink/flink-connector-kafka_2.12/1.19.3/flink-connector-kafka_2.12-1.19.3.jar
+# Kafka DataStream Connector (WAJIB untuk PyFlink KafkaSource)
+RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.3.0-1.19.jar \
+    https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka/3.3.0-1.19/flink-connector-kafka-3.3.0-1.19.jar
 
-# Kafka clients
-RUN curl -L -o /opt/flink/lib/kafka-clients-3.5.1.jar \
-    https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.5.1/kafka-clients-3.5.1.jar
 
-# SQL connector (optional, tapi aman)
-RUN curl -L -o /opt/flink/lib/flink-sql-connector-kafka_2.12-1.19.3.jar \
-    https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka_2.12/1.19.3/flink-sql-connector-kafka_2.12-1.19.3.jar
+# Kafka SQL Connector (opsional tapi aman)
+RUN curl -fL -o /opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.19.jar \
+    https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.3.0-1.19/flink-sql-connector-kafka-3.3.0-1.19.jar
+
+
+# Kafka Clients (versi aman untuk Flink 1.19)
+RUN curl -fL -o /opt/flink/lib/kafka-clients-3.5.1.jar \
+    https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/3.5.1/kafka-clients-3.5.1.jar
 
 EXPOSE 8081
