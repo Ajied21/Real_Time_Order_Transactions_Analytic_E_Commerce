@@ -2,43 +2,34 @@ FROM apache/flink:1.19.3
 
 USER root
 
-# =========================================================
 # Install Python (untuk PyFlink)
-# =========================================================
 RUN apt-get update && \
     apt-get install -y python3 python3-pip curl && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# =========================================================
 # Install PyFlink (HARUS sama dengan versi Flink)
-# =========================================================
 RUN pip3 install --no-cache-dir \
     apache-flink==1.19.3 \
     protobuf==3.20.3
 
-# =========================================================
 # Kafka Connector (DataStream)
-# =========================================================
 RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.3.0-1.19.jar \
     https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka/3.3.0-1.19/flink-connector-kafka-3.3.0-1.19.jar
 
-# =========================================================
+
 # Kafka SQL Connector (aman walau tidak dipakai)
-# =========================================================
 RUN curl -fL -o /opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.19.jar \
     https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.3.0-1.19/flink-sql-connector-kafka-3.3.0-1.19.jar
 
-# =========================================================
+
 # Kafka Clients
-# =========================================================
 RUN curl -fL -o /opt/flink/lib/kafka-clients-3.5.1.jar \
     https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/3.5.1/kafka-clients-3.5.1.jar
 
-# =========================================================
+
 # Hadoop (filesystem & parquet dependency)
-# =========================================================
 RUN curl -fL -o /opt/flink/lib/hadoop-common-3.3.6.jar \
     https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-common/3.3.6/hadoop-common-3.3.6.jar && \
     curl -fL -o /opt/flink/lib/hadoop-client-3.3.6.jar \
@@ -48,29 +39,9 @@ RUN curl -fL -o /opt/flink/lib/hadoop-common-3.3.6.jar \
     curl -fL -o /opt/flink/lib/hadoop-shaded-guava-1.1.1.jar \
     https://repo.maven.apache.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar
 
-# =========================================================
-# Parquet
-# =========================================================
-RUN curl -fL -o /opt/flink/lib/flink-parquet-1.19.3.jar \
-    https://repo.maven.apache.org/maven2/org/apache/flink/flink-parquet/1.19.3/flink-parquet-1.19.3.jar && \
-    curl -fL -o /opt/flink/lib/parquet-column-1.13.1.jar \
-    https://repo.maven.apache.org/maven2/org/apache/parquet/parquet-column/1.13.1/parquet-column-1.13.1.jar && \
-    curl -fL -o /opt/flink/lib/parquet-common-1.13.1.jar \
-    https://repo.maven.apache.org/maven2/org/apache/parquet/parquet-common/1.13.1/parquet-common-1.13.1.jar && \
-    curl -fL -o /opt/flink/lib/parquet-hadoop-1.13.1.jar \
-    https://repo.maven.apache.org/maven2/org/apache/parquet/parquet-hadoop/1.13.1/parquet-hadoop-1.13.1.jar
 
-# =========================================================
-# XML dependency (wajib untuk parquet)
-# =========================================================
-RUN curl -fL -o /opt/flink/lib/stax2-api-4.2.1.jar \
-    https://repo.maven.apache.org/maven2/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar && \
-    curl -fL -o /opt/flink/lib/woodstox-core-6.5.1.jar \
-    https://repo.maven.apache.org/maven2/com/fasterxml/woodstox/woodstox-core/6.5.1/woodstox-core-6.5.1.jar
 
-# =========================================================
 # PyFlink environment
-# =========================================================
 ENV PYTHON_EXECUTABLE=python
 ENV PYFLINK_CLIENT_EXECUTABLE=python
 
