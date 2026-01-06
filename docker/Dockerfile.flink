@@ -2,32 +2,32 @@ FROM apache/flink:1.19.3
 
 USER root
 
-# Install Python (untuk PyFlink)
+# ==============================
+# Install Python (PyFlink)
+# ==============================
 RUN apt-get update && \
     apt-get install -y python3 python3-pip curl && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install PyFlink (HARUS sama dengan versi Flink)
-RUN pip3 install --no-cache-dir \
-    apache-flink==1.19.3
+# PyFlink HARUS sama versi Flink
+RUN pip3 install --no-cache-dir apache-flink==1.19.3
 
-# Kafka Connector (DataStream)
-RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.3.0-1.19.jar \
-    https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka/3.3.0-1.19/flink-connector-kafka-3.3.0-1.19.jar
+# ==============================
+# Kafka Connector (VERSI BENAR)
+# ==============================
+RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.1.0-1.19.jar \
+    https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-kafka/3.1.0-1.19/flink-connector-kafka-3.1.0-1.19.jar
 
-
-# Kafka SQL Connector (aman walau tidak dipakai)
-RUN curl -fL -o /opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.19.jar \
-    https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.3.0-1.19/flink-sql-connector-kafka-3.3.0-1.19.jar
-
+# Kafka SQL Connector (opsional tapi aman)
+RUN curl -fL -o /opt/flink/lib/flink-sql-connector-kafka-3.1.0-1.19.jar \
+    https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.1.0-1.19/flink-sql-connector-kafka-3.1.0-1.19.jar
 
 # Kafka Clients
 RUN curl -fL -o /opt/flink/lib/kafka-clients-3.5.1.jar \
     https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/3.5.1/kafka-clients-3.5.1.jar
 
-    
 # ==============================
 # S3 FILESYSTEM PLUGIN (WAJIB)
 # ==============================
@@ -35,8 +35,7 @@ RUN mkdir -p /opt/flink/plugins/flink-s3-fs-hadoop && \
     curl -fL -o /opt/flink/plugins/flink-s3-fs-hadoop/flink-s3-fs-hadoop-1.19.3.jar \
     https://repo.maven.apache.org/maven2/org/apache/flink/flink-s3-fs-hadoop/1.19.3/flink-s3-fs-hadoop-1.19.3.jar
 
-
-# PyFlink environment
+# PyFlink env
 ENV PYTHON_EXECUTABLE=python
 ENV PYFLINK_CLIENT_EXECUTABLE=python
 
