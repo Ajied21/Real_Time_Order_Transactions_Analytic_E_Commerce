@@ -27,25 +27,13 @@ RUN curl -fL -o /opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.19.jar \
 RUN curl -fL -o /opt/flink/lib/kafka-clients-3.5.1.jar \
     https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/3.5.1/kafka-clients-3.5.1.jar
 
-
-# Hadoop (filesystem & parquet dependency)
-RUN curl -fL -o /opt/flink/lib/hadoop-common-3.3.6.jar \
-    https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-common/3.3.6/hadoop-common-3.3.6.jar && \
-    curl -fL -o /opt/flink/lib/hadoop-client-3.3.6.jar \
-    https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-client/3.3.6/hadoop-client-3.3.6.jar && \
-    curl -fL -o /opt/flink/lib/hadoop-auth-3.3.6.jar \
-    https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-auth/3.3.6/hadoop-auth-3.3.6.jar && \
-    curl -fL -o /opt/flink/lib/hadoop-shaded-guava-1.1.1.jar \
-    https://repo.maven.apache.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar
-
-
+    
 # ==============================
-# AWS S3 (s3a://) SUPPORT
+# S3 FILESYSTEM PLUGIN (WAJIB)
 # ==============================
-RUN curl -fL -o /opt/flink/lib/hadoop-aws-3.3.6.jar \
-    https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/3.3.6/hadoop-aws-3.3.6.jar && \
-    curl -fL -o /opt/flink/lib/aws-java-sdk-bundle-1.12.622.jar \
-    https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.622/aws-java-sdk-bundle-1.12.622.jar
+RUN mkdir -p /opt/flink/plugins/flink-s3-fs-hadoop && \
+    curl -fL -o /opt/flink/plugins/flink-s3-fs-hadoop/flink-s3-fs-hadoop-1.19.3.jar \
+    https://repo.maven.apache.org/maven2/org/apache/flink/flink-s3-fs-hadoop/1.19.3/flink-s3-fs-hadoop-1.19.3.jar
 
 
 # PyFlink environment

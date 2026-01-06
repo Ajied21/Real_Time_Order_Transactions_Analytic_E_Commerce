@@ -37,7 +37,7 @@ TABLE_TO_FOLDER = {
 # BASE_OUTPUT_PATH = "/opt/flink/output"
 
 # cloud (aws/s3)
-BASE_OUTPUT_PATH = "s3a://my-bronze-bucket/bronze"
+BASE_OUTPUT_PATH = "s3a://real-time-ecommerce-analytics/data-lake"
 
 TODAY = datetime.date.today().isoformat()
 
