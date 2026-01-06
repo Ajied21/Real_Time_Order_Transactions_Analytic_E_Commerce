@@ -33,9 +33,13 @@ TABLE_TO_FOLDER = {
     "bronze_shipping_raw": "shipping",
 }
 
-BASE_OUTPUT_PATH = "/opt/flink/output"
-TODAY = datetime.date.today().isoformat()
+# local
+# BASE_OUTPUT_PATH = "/opt/flink/output"
 
+# cloud (aws/s3)
+BASE_OUTPUT_PATH = "s3a://my-bronze-bucket/bronze"
+
+TODAY = datetime.date.today().isoformat()
 
 # =========================================================
 # FLINK ENVIRONMENT

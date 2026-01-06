@@ -423,5 +423,51 @@ kubectl-running-monitoring-k8s:
 	@echo 'Kubernetes Monitoring Processing DONE'
 	@echo '==========================================================='
 
+# =====================================
+# Terraform AWS – Makefile
+# =====================================
+
+TF_DIR := terraform
+
+# ======================
+# Core Terraform
+# ======================
+
+init:
+	@echo "==> Terraform init"
+	cd $(TF_DIR) && terraform init
+
+plan:
+	@echo "==> Terraform plan"
+	cd $(TF_DIR) && terraform plan
+
+apply:
+	@echo "==> Terraform apply"
+	cd $(TF_DIR) && terraform apply -auto-approve
+
+destroy:
+	@echo "==> Terraform destroy"
+	cd $(TF_DIR) && terraform destroy -auto-approve
+
+# ======================
+# Helpers
+# ======================
+
+fmt:
+	@echo "==> Terraform fmt"
+	cd $(TF_DIR) && terraform fmt
+
+validate:
+	@echo "==> Terraform validate"
+	cd $(TF_DIR) && terraform validate
+
+# ======================
+# One-command deploy
+# ======================
+
+deploy: init fmt validate plan apply
+	@echo "==> Terraform AWS deploy completed successfully!"
+
+
 clean:
 	@bash ./scripts/goodnight.sh

@@ -1,2 +1,13 @@
 postgres-data
 *.drawio
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.json
+.aws/
+*.tfstate
+*.tfstate.*
+.terraform/
+keys/
+*.tfvars
+*.lock.hcl

@@ -11,8 +11,7 @@ RUN apt-get update && \
 
 # Install PyFlink (HARUS sama dengan versi Flink)
 RUN pip3 install --no-cache-dir \
-    apache-flink==1.19.3 \
-    protobuf==3.20.3
+    apache-flink==1.19.3
 
 # Kafka Connector (DataStream)
 RUN curl -fL -o /opt/flink/lib/flink-connector-kafka-3.3.0-1.19.jar \
@@ -39,6 +38,14 @@ RUN curl -fL -o /opt/flink/lib/hadoop-common-3.3.6.jar \
     curl -fL -o /opt/flink/lib/hadoop-shaded-guava-1.1.1.jar \
     https://repo.maven.apache.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar
 
+
+# ==============================
+# AWS S3 (s3a://) SUPPORT
+# ==============================
+RUN curl -fL -o /opt/flink/lib/hadoop-aws-3.3.6.jar \
+    https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/3.3.6/hadoop-aws-3.3.6.jar && \
+    curl -fL -o /opt/flink/lib/aws-java-sdk-bundle-1.12.622.jar \
+    https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.622/aws-java-sdk-bundle-1.12.622.jar
 
 
 # PyFlink environment
