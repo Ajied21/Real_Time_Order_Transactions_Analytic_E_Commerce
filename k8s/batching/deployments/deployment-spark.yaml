@@ -1,15 +1,3 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: spark-logs-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
----
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,19 +15,13 @@ spec:
         app: spark
     spec:
       containers:
-        # Spark Master
+        # ======================
+        # Spark Master (DRIVER)
+        # ======================
         - name: spark-master
           image: ajied21/spark:latest
           imagePullPolicy: IfNotPresent
-          env:
-            - name: SPARK_MODE
-              value: "master"
-            - name: SPARK_MASTER_HOST
-              value: "0.0.0.0"
-            - name: SPARK_MASTER_PORT
-              value: "7077"
-            - name: SPARK_MASTER_UI_PORT
-              value: "8080"
+
           command:
             - "/opt/spark/bin/spark-class"
             - "org.apache.spark.deploy.master.Master"
@@ -49,40 +31,49 @@ spec:
             - "7077"
             - "--webui-port"
             - "8080"
+
           ports:
             - containerPort: 7077
             - containerPort: 8080
+
           volumeMounts:
             - name: spark-logs
               mountPath: /tmp
+            - name: spark-data
+              mountPath: /home/spark-master-data   # ✅ OUTPUT PYTHON
+            - name: spark-scripts
+              mountPath: /opt/app           # ✅ PYTHON SCRIPT
 
+        # ======================
         # Spark Worker
+        # ======================
         - name: spark-worker
           image: ajied21/spark:latest
           imagePullPolicy: IfNotPresent
-          env:
-            - name: SPARK_MODE
-              value: "worker"
-            - name: SPARK_MASTER_URL
-              value: "spark://spark:7077"
-            - name: SPARK_WORKER_MEMORY
-              value: "1G"
-            - name: SPARK_WORKER_CORES
-              value: "1"
-            - name: SPARK_WORKER_WEBUI_PORT
-              value: "8081"
+
           command:
             - "/opt/spark/bin/spark-class"
             - "org.apache.spark.deploy.worker.Worker"
-            - "spark://spark:7077"
+            - "spark://localhost:7077"
+
           ports:
-            - containerPort: 9102   # metrics
-            - containerPort: 8081   # worker UI
+            - containerPort: 8081
+            - containerPort: 9102
+
           volumeMounts:
             - name: spark-logs
               mountPath: /tmp
+            - name: spark-data
+              mountPath: /home/spark-master-data
 
       volumes:
         - name: spark-logs
           persistentVolumeClaim:
             claimName: spark-logs-pvc
+
+        - name: spark-data
+          persistentVolumeClaim:
+            claimName: spark-data-pvc
+
+        - name: spark-scripts
+          emptyDir: {}   # script dicopy via kubectl cp

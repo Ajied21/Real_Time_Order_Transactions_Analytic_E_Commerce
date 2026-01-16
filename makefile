@@ -187,21 +187,21 @@ kubectl-Starting-database-k8s:
 	@kubectl scale deployment pgadmin --replicas=1
 	@echo '==========================================================='
 
-# kubectl-batching-k8s:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Apply Kubernetes Batching Processing ...'
-# 	@echo '__________________________________________________________'
-# 	@kubectl apply -R -f k8s/batching/
-# 	@echo '==========================================================='
+kubectl-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Apply Kubernetes Batching Processing ...'
+	@echo '__________________________________________________________'
+	@kubectl apply -R -f k8s/batching/
+	@echo '==========================================================='
 
-# kubectl-Stopping-batching-k8s:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Stopping Kubernetes Batching ...'
+kubectl-Stopping-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Stopping Kubernetes Batching ...'
 # 	@echo '__________________________________________________________'
 # 	@kubectl scale deployment airflow --replicas=0
-# 	@echo '__________________________________________________________'
-# 	kubectl scale deployment spark --replicas=0
-# 	@echo '==========================================================='
+	@echo '__________________________________________________________'
+	kubectl scale deployment spark --replicas=0
+	@echo '==========================================================='
 
 # kubectl-Starting-batching-k8s:
 # 	@echo '__________________________________________________________'
@@ -345,10 +345,10 @@ kubectl-stop-database-k8s:
 	echo 'PostgreSQL port-forward STOPPED' || \
 	echo 'PostgreSQL port-forward not running'
 
-# kubectl-running-batching-k8s:
-# 	@echo '==========================================================='
-# 	@echo 'Running Kubernetes Batching Processing ...'
-# 	@echo '==========================================================='
+kubectl-running-batching-k8s:
+	@echo '==========================================================='
+	@echo 'Running Kubernetes Batching Processing ...'
+	@echo '==========================================================='
 
 # 	@echo 'Starting Airflow port-forward (8085)...'
 # 	@kubectl port-forward svc/airflow 8085:8080 > /tmp/airflow_pf.log 2>&1 & \
@@ -357,16 +357,16 @@ kubectl-stop-database-k8s:
 # 	echo 'Airflow READY at http://localhost:8085' || \
 # 	( echo 'Airflow FAILED'; tail -n 5 /tmp/airflow_pf.log )
 
-# 	@echo 'Starting Spark port-forward (9100)...'
-# 	@kubectl port-forward svc/spark 9100:8080 > /tmp/spark_pf.log 2>&1 & \
-# 	sleep 3 && \
-# 	netstat -ano | grep ':9100' >/dev/null 2>&1 && \
-# 	echo 'Spark READY at http://localhost:9100' || \
-# 	( echo 'Spark FAILED'; tail -n 5 /tmp/spark_pf.log )
+	@echo 'Starting Spark port-forward (9100)...'
+	@kubectl port-forward svc/spark 9100:8080 > /tmp/spark_pf.log 2>&1 & \
+	sleep 3 && \
+	netstat -ano | grep ':9100' >/dev/null 2>&1 && \
+	echo 'Spark READY at http://localhost:9100' || \
+	( echo 'Spark FAILED'; tail -n 5 /tmp/spark_pf.log )
 
-# 	@echo '==========================================================='
-# 	@echo 'Kubernetes Batching Processing DONE'
-# 	@echo '==========================================================='
+	@echo '==========================================================='
+	@echo 'Kubernetes Batching Processing DONE'
+	@echo '==========================================================='
 
 kubectl-running-streaming-debezium-k8s:
 	@echo '==========================================================='

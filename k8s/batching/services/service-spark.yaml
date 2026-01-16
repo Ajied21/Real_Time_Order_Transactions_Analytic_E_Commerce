@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: spark
 spec:
+  type: NodePort
   selector:
     app: spark
   ports:
@@ -12,10 +13,10 @@ spec:
     - name: master-ui
       port: 8080
       targetPort: 8080
+      nodePort: 30180
     - name: worker-ui
       port: 8081
       targetPort: 8081
     - name: worker-metrics
       port: 9102
       targetPort: 9102
-  type: ClusterIP

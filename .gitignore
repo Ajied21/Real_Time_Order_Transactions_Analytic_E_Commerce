@@ -11,3 +11,4 @@ postgres-data
 keys/
 *.tfvars
 *.lock.hcl
+secret_aws/.env

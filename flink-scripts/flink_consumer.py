@@ -130,7 +130,7 @@ for table, folder in TABLE_TO_FOLDER.items():
 
     sink = (
         FileSink.for_row_format(
-            base_path=f"{BASE_OUTPUT_PATH}/{folder}/{TODAY}",
+            base_path=f"{BASE_OUTPUT_PATH}/{folder}",
             encoder=Encoder.simple_string_encoder("UTF-8"),
         )
         .with_output_file_config(
@@ -155,4 +155,4 @@ for table, folder in TABLE_TO_FOLDER.items():
 # =========================================================
 # EXECUTE
 # =========================================================
-env.execute("Debezium Multi Topic → Bronze Files")
+env.execute("Flink Transform  Multi Topic → Bronze Files")
