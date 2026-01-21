@@ -203,14 +203,14 @@ kubectl-Stopping-batching-k8s:
 	kubectl scale deployment spark --replicas=0
 	@echo '==========================================================='
 
-# kubectl-Starting-batching-k8s:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Starting Kubernetes Batching ...'
-# 	@echo '__________________________________________________________'
+kubectl-Starting-batching-k8s:
+	@echo '__________________________________________________________'
+	@echo 'Starting Kubernetes Batching ...'
+	@echo '__________________________________________________________'
 # 	@kubectl scale deployment airflow --replicas=1
 # 	@echo '__________________________________________________________'
-# 	kubectl scale deployment spark --replicas=1
-# 	@echo '==========================================================='
+	kubectl scale deployment spark --replicas=1
+	@echo '==========================================================='
 
 kubectl-streaming-delete-connector-k8s:
 	@echo '__________________________________________________________'

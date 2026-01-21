@@ -17,7 +17,7 @@ provider "aws" {
 }
 
 # ======================
-# S3 Bucket
+# S3 Bucket (Data Lake)
 # ======================
 resource "aws_s3_bucket" "real_time_ecommerce_analytics" {
   bucket        = var.s3_bucket_name
@@ -40,6 +40,18 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket_lifecycle" {
 }
 
 # ======================
+# Redshift Subnet Group (PUBLIC)
+# ======================
+resource "aws_redshift_subnet_group" "public" {
+  name       = "redshift-public-subnet-group"
+  subnet_ids = var.public_subnet_ids
+
+  tags = {
+    Name = "redshift-public-subnet-group"
+  }
+}
+
+# ======================
 # Redshift Cluster
 # ======================
 resource "aws_redshift_cluster" "real_time_ecommerce_analytics" {
@@ -54,4 +66,24 @@ resource "aws_redshift_cluster" "real_time_ecommerce_analytics" {
 
   publicly_accessible = true
   skip_final_snapshot = true
+  port                = 5439
+
+  # ✅ PAKAI SG EXISTING (BUKAN CREATE)
+  vpc_security_group_ids = [
+    var.existing_security_group_id
+  ]
+
+  cluster_subnet_group_name = aws_redshift_subnet_group.public.name
+
+  lifecycle {
+    ignore_changes = [
+      encrypted,
+      availability_zone_relocation_enabled
+    ]
+  }
+
+  tags = {
+    Environment = "projects"
+    Project     = "real-time-ecommerce-analytics"
+  }
 }

@@ -23,5 +23,3 @@ spec:
               value: "local"
             - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
               value: "kafka:9092"
-            - name: KAFKA_CLUSTERS_0_SCHEMAREGISTRY
-              value: "http://schema-registry:8081"

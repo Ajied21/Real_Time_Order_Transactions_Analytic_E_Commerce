@@ -97,7 +97,7 @@ def extract_payload(value):
         result["connector"] = source.get("connector")
         result["db"] = source.get("db")
         result["schema"] = source.get("schema")
-        result["table"] = table
+        result["table_name"] = table
         result["source_ts_ms"] = source.get("ts_ms")
 
         result["event_ts_ms"] = payload.get("ts_ms")

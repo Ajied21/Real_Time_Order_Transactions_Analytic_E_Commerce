@@ -1,5 +1,7 @@
 run architecture
 
+kubectl get pods
+
 data sources !!!
 - make kubectl-database-k8s
 - make kubectl-running-database-k8s
@@ -27,6 +29,67 @@ run container :
 - make kubectl-running-streaming-Flink-k8s
 
 data batching !!!
-- make kubectl-batching-k8s
-- make kubectl-Starting-batching-k8s
-- make kubectl-Stopping-batching-k8s
+make kubectl-batching-k8s
+make kubectl-Starting-batching-k8s
+make kubectl-Stopping-batching-k8s
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+kubectl get pods
+
+kubectl exec -it flink-jobmanager-xxxxxxxxxx -- bash
+
+copy flink :
+kubectl cp flink-scripts/flink_consumer.py cek_nods:/opt/flink/flink-scripts/flink_consumer.py 
+
+run flink :
+
+flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
+
+
+spark bash :
+
+kubectl exec -it spark-xxxxxxxxxx -- bash
+
+copy aws :
+kubectl cp spark-scripts/spark_jobs_s3.py cek_nods:/opt/app/spark_jobs_s3.py
+
+1.spark+aws :
+mkdir secret_aws
+
+2.copy spark_aws :
+kubectl cp .env cek_nods:/opt/app/secret_aws/.env
+
+3.spark+aws (penting) in /opt/app/ :
+set -a source secret_aws/.env set +a
+
+output env :
+cat /opt/app/.env
+
+run spark :
+
+spark-submit spark_jobs_s3.py --run_all # run all
+
+spark-submit spark_jobs_s3.py --table orders # per table
+
+copy file/data ke local :
+kubectl cp spark-849c654cfc-mfqdl:/opt/app/output/bronze_csv ./bronze_csv
+
+spark-submit spark_jobs_s3.py --run_all --process_date 2026-01-21
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+DDL in Redshift :
+
+CREATE SCHEMA IF NOT EXISTS bronze;
+CREATE SCHEMA IF NOT EXISTS silver;
+CREATE SCHEMA IF NOT EXISTS gold;
+
+run cdc lagi ke kafka lalu ke batching
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+buat ingestion ke spark 
+main airflow

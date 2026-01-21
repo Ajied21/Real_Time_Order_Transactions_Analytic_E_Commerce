@@ -17,6 +17,18 @@ variable "aws_profile" {
 }
 
 # ======================
+# Network
+# ======================
+variable "public_subnet_ids" {
+  type = list(string)
+}
+
+variable "existing_security_group_id" {
+  type        = string
+  description = "Existing Security Group ID that allows inbound Redshift (5439) from laptop IP"
+}
+
+# ======================
 # S3
 # ======================
 variable "s3_bucket_name" {
@@ -45,7 +57,6 @@ variable "redshift_master_username" {
 variable "redshift_master_password" {
   type      = string
   sensitive = true
-  default   = "Admin123!"
 }
 
 variable "redshift_node_type" {
