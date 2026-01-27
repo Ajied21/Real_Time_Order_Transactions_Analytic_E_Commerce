@@ -4,7 +4,9 @@ metadata:
   name: postgres-db-sql
 data:
   create-multiple-dbs.sql: |
-    ALTER SYSTEM SET wal_level = 'logical';
+    -- Pastikan user bisa replication
+    ALTER ROLE user WITH REPLICATION;
 
+    -- Database tambahan
     CREATE DATABASE data_staging;
     CREATE DATABASE backup;

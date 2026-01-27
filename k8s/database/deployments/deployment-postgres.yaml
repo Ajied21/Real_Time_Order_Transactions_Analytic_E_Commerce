@@ -36,6 +36,13 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_DB
+          args:
+            - "-c"
+            - "wal_level=logical"
+            - "-c"
+            - "max_replication_slots=10"
+            - "-c"
+            - "max_wal_senders=10"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data

@@ -3,12 +3,13 @@ run architecture
 kubectl get pods
 
 data sources !!!
-- make kubectl-database-k8s
-- make kubectl-running-database-k8s
-- make DDL
-- make DML
-- kubectl scale deployment postgres --replicas=1
-- kubectl scale deployment postgres --replicas=0
+make kubectl-database-k8s
+make kubectl-running-database-k8s
+make DDL
+make DML
+kubectl scale deployment postgres --replicas=1
+kubectl scale deployment postgres --replicas=0
+kubectl scale deployment pgadmin --replicas=0
 
 data streaming !!!
 run bareng :
@@ -24,9 +25,8 @@ run bareng stop/delete:
 make kubectl-streaming-delete-connector-k8s
 make kubectl-Stopping-streaming-k8s
 
-run container :
-- make kubectl-running-streaming-debezium-k8s
-- make kubectl-running-streaming-Flink-k8s
+run container debezium:
+make kubectl-running-streaming-debezium-k8s
 
 data batching !!!
 make kubectl-batching-k8s
@@ -40,11 +40,15 @@ kubectl get pods
 kubectl exec -it flink-jobmanager-xxxxxxxxxx -- bash
 
 copy flink :
-kubectl cp flink-scripts/flink_consumer.py cek_nods:/opt/flink/flink-scripts/flink_consumer.py 
+kubectl cp flink-scripts/flink_consumer.py flink-jobmanager-xxxxxxxxxx:/opt/flink/flink-scripts/flink_consumer.py 
 
-run flink :
+run flink normal :
 
 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
+
+run flink backfill :
+
+FLINK_MODE=backfill BACKFILL_FROM_DATE=2026-01-25 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
 
 
 spark bash :
@@ -58,10 +62,10 @@ kubectl cp spark-scripts/spark_jobs_s3.py cek_nods:/opt/app/spark_jobs_s3.py
 mkdir secret_aws
 
 2.copy spark_aws :
-kubectl cp .env cek_nods:/opt/app/secret_aws/.env
+kubectl cp .env cek_nods:/opt/app/.env
 
 3.spark+aws (penting) in /opt/app/ :
-set -a source secret_aws/.env set +a
+set -a source .env set +a
 
 output env :
 cat /opt/app/.env
@@ -75,8 +79,14 @@ spark-submit spark_jobs_s3.py --table orders # per table
 copy file/data ke local :
 kubectl cp spark-849c654cfc-mfqdl:/opt/app/output/bronze_csv ./bronze_csv
 
-spark-submit spark_jobs_s3.py --run_all --process_date 2026-01-21
+spark-submit spark_jobs_s3.py --table customer --process_date 2026-01-21--06
 
+spark-submit Ingest_to_Redshift.py --table customer --process_date 2026-01-21
+
+
+spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.4 --jars /path/to/RedshiftJDBC42-no-awssdk-2.1.0.12.jar Ingestion_to_Redshift.py --table customer
+
+spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -91,5 +101,14 @@ run cdc lagi ke kafka lalu ke batching
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-buat ingestion ke spark 
+export REDSHIFT_HOST=real-time-ecommerce-analytics-cluster.cqx6yxf2ywld.ap-southeast-1.redshift.amazonaws.com
+export REDSHIFT_DB=real_time_ecommerce_analytics
+export REDSHIFT_USER=adminuser
+export REDSHIFT_PASSWORD='Alonedc35!'
+export REDSHIFT_PORT=5439
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+flink narik data bedasarkan current date atau bisa di backfill sesuai tanggal kebutuhan
+buat ingestion ke spark tanpa duplikat 
 main airflow

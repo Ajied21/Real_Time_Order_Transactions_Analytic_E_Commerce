@@ -10,6 +10,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 # =====================================================
+# Config
+# =====================================================
+SCHEMA = "bronze"
+
+# RESET MODE
+# true  -> DROP & CREATE (DEV / REPROCESS)
+# false -> CREATE IF NOT EXISTS (PROD SAFE)
+RESET_BRONZE = os.getenv("RESET_BRONZE", "false").lower() == "true"
+
+# =====================================================
 # Redshift Connection
 # =====================================================
 conn = psycopg2.connect(
@@ -22,13 +32,10 @@ conn = psycopg2.connect(
 conn.autocommit = True
 cur = conn.cursor()
 
-SCHEMA = "bronze"
-
 # =====================================================
 # Table Definitions (BRONZE = RAW / STRING FIRST)
 # =====================================================
 TABLE_DEFINITIONS = {
-
     "customer": [
         ("_ingest_date", "VARCHAR(65535)"),
         ("_ingestion_time", "BIGINT"),
@@ -189,17 +196,19 @@ TABLE_DEFINITIONS = {
 cur.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};")
 
 # =====================================================
-# Drop & Create Tables (SAFE FOR BRONZE RESET)
+# Create Tables (SAFE MODE)
 # =====================================================
 for table, columns in TABLE_DEFINITIONS.items():
-    print(f"🛠 Recreating table bronze.{table}")
+    print(f"🛠 Processing table bronze.{table}")
 
-    cur.execute(f"DROP TABLE IF EXISTS {SCHEMA}.{table};")
+    if RESET_BRONZE:
+        print("⚠️ RESET_BRONZE = true → drop & recreate")
+        cur.execute(f"DROP TABLE IF EXISTS {SCHEMA}.{table};")
 
     cols_sql = ",\n    ".join([f"{col} {dtype}" for col, dtype in columns])
 
     ddl = f"""
-    CREATE TABLE {SCHEMA}.{table} (
+    CREATE TABLE IF NOT EXISTS {SCHEMA}.{table} (
         {cols_sql}
     )
     DISTSTYLE AUTO;
@@ -210,4 +219,4 @@ for table, columns in TABLE_DEFINITIONS.items():
 cur.close()
 conn.close()
 
-print("🎉 Bronze DDL successfully created (SAFE FOR PARQUET COPY)")
+print("🎉 Bronze DDL finished successfully (SAFE & PROD READY)")

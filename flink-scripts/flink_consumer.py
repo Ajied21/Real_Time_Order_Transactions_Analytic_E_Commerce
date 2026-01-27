@@ -8,9 +8,10 @@ from pyflink.datastream.connectors.file_system import (
     OutputFileConfig,
     RollingPolicy,
 )
-import json
-import datetime
 
+import json
+import os
+import datetime
 
 # =========================================================
 # CONFIG
@@ -33,13 +34,16 @@ TABLE_TO_FOLDER = {
     "bronze_shipping_raw": "shipping",
 }
 
-# local
-# BASE_OUTPUT_PATH = "/opt/flink/output"
-
-# cloud (aws/s3)
 BASE_OUTPUT_PATH = "s3a://real-time-ecommerce-analytics/data-lake"
 
-TODAY = datetime.date.today().isoformat()
+# =========================================================
+# MODE (NORMAL / BACKFILL)
+# =========================================================
+FLINK_MODE = os.getenv("FLINK_MODE", "normal")  # normal | backfill
+BACKFILL_FROM_DATE = os.getenv("BACKFILL_FROM_DATE")  # YYYY-MM-DD
+BACKFILL_FROM_HOUR = int(os.getenv("BACKFILL_FROM_HOUR", "0"))
+
+INGEST_DATE = datetime.date.today().isoformat()
 
 # =========================================================
 # FLINK ENVIRONMENT
@@ -47,19 +51,47 @@ TODAY = datetime.date.today().isoformat()
 env = StreamExecutionEnvironment.get_execution_environment()
 env.set_parallelism(1)
 
-# WAJIB untuk FileSink
+# wajib untuk FileSink & offset commit
 env.enable_checkpointing(5000)
 
+# =========================================================
+# KAFKA OFFSET STRATEGY
+# =========================================================
+if FLINK_MODE == "backfill":
+    if not BACKFILL_FROM_DATE:
+        raise ValueError(
+            "BACKFILL_FROM_DATE wajib di-set saat FLINK_MODE=backfill"
+        )
+
+    backfill_dt = datetime.datetime.strptime(
+        BACKFILL_FROM_DATE, "%Y-%m-%d"
+    ).replace(hour=BACKFILL_FROM_HOUR)
+
+    backfill_ts_ms = int(backfill_dt.timestamp() * 1000)
+
+    print(
+        f"[BACKFILL MODE] Replay Kafka from {backfill_dt} "
+        f"(timestamp_ms={backfill_ts_ms})"
+    )
+
+    starting_offsets = KafkaOffsetsInitializer.timestamp(backfill_ts_ms)
+
+else:
+    print("[NORMAL MODE] Using committed Kafka offsets")
+
+    starting_offsets = KafkaOffsetsInitializer.committed_offsets(
+        KafkaOffsetsInitializer.OffsetResetStrategy.LATEST
+    )
 
 # =========================================================
-# KAFKA SOURCE (MULTI TOPIC)
+# KAFKA SOURCE
 # =========================================================
 source = (
     KafkaSource.builder()
     .set_bootstrap_servers(BOOTSTRAP_SERVERS)
     .set_topics(*KAFKA_TOPICS)
     .set_group_id("flink-bronze-consumer")
-    .set_starting_offsets(KafkaOffsetsInitializer.earliest())
+    .set_starting_offsets(starting_offsets)
     .set_value_only_deserializer(SimpleStringSchema())
     .build()
 )
@@ -69,7 +101,6 @@ stream = env.from_source(
     WatermarkStrategy.no_watermarks(),
     "Kafka Debezium Multi Topic",
 )
-
 
 # =========================================================
 # TRANSFORM: Debezium → (table, json_string)
@@ -90,21 +121,22 @@ def extract_payload(value):
 
         table = source.get("table")
 
-        result = {}
-        result["op"] = op
+        result = {
+            "op": op,
+            "connector": source.get("connector"),
+            "db": source.get("db"),
+            "schema": source.get("schema"),
+            "table_name": table,
+            "source_ts_ms": source.get("ts_ms"),
+            "event_ts_ms": payload.get("ts_ms"),
+            "ts_us": payload.get("ts_us"),
+            "ts_ns": payload.get("ts_ns"),
+            "transaction": payload.get("transaction"),
+            "_ingest_date": INGEST_DATE,
+        }
+
+        # actual row data
         result.update(after)
-
-        result["connector"] = source.get("connector")
-        result["db"] = source.get("db")
-        result["schema"] = source.get("schema")
-        result["table_name"] = table
-        result["source_ts_ms"] = source.get("ts_ms")
-
-        result["event_ts_ms"] = payload.get("ts_ms")
-        result["ts_us"] = payload.get("ts_us")
-        result["ts_ns"] = payload.get("ts_ns")
-        result["transaction"] = payload.get("transaction")
-        result["_ingest_date"] = TODAY
 
         return table, json.dumps(result)
 
@@ -115,22 +147,28 @@ def extract_payload(value):
 
 processed = (
     stream
-    .map(extract_payload, output_type=Types.TUPLE([Types.STRING(), Types.STRING()]))
+    .map(
+        extract_payload,
+        output_type=Types.TUPLE([Types.STRING(), Types.STRING()]),
+    )
     .filter(lambda x: x is not None)
 )
 
-# DEBUG (lihat di log taskmanager)
+# DEBUG (optional)
 processed.print()
 
-
 # =========================================================
-# FILE SINK PER TABLE (AMAN & STABIL)
+# FILE SINK PER TABLE (PARTITION BY INGEST DATE)
 # =========================================================
 for table, folder in TABLE_TO_FOLDER.items():
 
+    sink_path = (
+        f"{BASE_OUTPUT_PATH}/{folder}/_ingest_date={INGEST_DATE}"
+    )
+
     sink = (
         FileSink.for_row_format(
-            base_path=f"{BASE_OUTPUT_PATH}/{folder}",
+            base_path=sink_path,
             encoder=Encoder.simple_string_encoder("UTF-8"),
         )
         .with_output_file_config(
@@ -139,8 +177,9 @@ for table, folder in TABLE_TO_FOLDER.items():
             .with_part_suffix(".json")
             .build()
         )
-        # ⬅️ PENTING: file langsung ditulis saat checkpoint
-        .with_rolling_policy(RollingPolicy.on_checkpoint_rolling_policy())
+        .with_rolling_policy(
+            RollingPolicy.on_checkpoint_rolling_policy()
+        )
         .build()
     )
 
@@ -151,8 +190,9 @@ for table, folder in TABLE_TO_FOLDER.items():
         .sink_to(sink)
     )
 
-
 # =========================================================
 # EXECUTE
 # =========================================================
-env.execute("Flink Transform  Multi Topic → Bronze Files")
+env.execute(
+    "Flink Bronze Multi Topic → S3 "
+    "(Normal & Backfill Mode, Partitioned by Ingest Date)")

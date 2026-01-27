@@ -317,18 +317,18 @@ kubectl-running-database-k8s:
 DDL:
 	@echo '==========================================================='
 	@echo 'Running DDL (Create Tables)'
-	@echo '==========================================================='
-	@python postgres-scripts/ddl-data_staging.py
+#	@echo '==========================================================='
+# @python postgres-scripts/ddl-data_staging.py
 	@echo '==========================================================='
 	@python postgres-scripts/ddl-data_lake.py
 
 DML:
 	@echo '==========================================================='
 	@echo 'Running DML (Insert Data)'
+# 	@echo '==========================================================='
+# 	@python postgres-scripts/dml-data_staging.py
 	@echo '==========================================================='
-	@python postgres-scripts/dml-data_staging.py
-#	@echo '==========================================================='
-#	@python postgres-scripts/dml-data_lake.py
+	@python postgres-scripts/dml-data_lake.py
 
 kubectl-stop-database-k8s:
 	@echo '==========================================================='
