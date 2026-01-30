@@ -59,7 +59,7 @@ env.set_parallelism(1)
 env.enable_checkpointing(5000)
 
 # =========================================================
-# KAFKA OFFSET STRATEGY
+# KAFKA OFFSET STRATEGY (FIXED)
 # =========================================================
 if FLINK_MODE == "backfill":
     if not BACKFILL_FROM_DATE:
@@ -73,12 +73,11 @@ if FLINK_MODE == "backfill":
         int(backfill_dt.timestamp() * 1000)
     )
 
-    print(f"[BACKFILL] from {BACKFILL_FROM_DATE}")
+    print(f"[BACKFILL] from {BACKFILL_FROM_DATE} hour {BACKFILL_FROM_HOUR}")
 
 else:
-    starting_offsets = KafkaOffsetsInitializer.committed_offsets(
-        KafkaOffsetsInitializer.OffsetResetStrategy.LATEST
-    )
+    # ✅ PyFlink TIDAK punya OffsetResetStrategy
+    starting_offsets = KafkaOffsetsInitializer.latest()
 
 # =========================================================
 # KAFKA SOURCE
@@ -127,7 +126,7 @@ def extract_payload(value):
             dt_wib = dt_utc.astimezone(WIB)
             after["date"] = dt_wib.date().isoformat()
 
-            # backfill date filter
+            # backfill filter
             if FLINK_MODE == "backfill":
                 if after["date"] != BACKFILL_FROM_DATE:
                     return None
@@ -163,7 +162,7 @@ processed = (
 processed.print()
 
 # =========================================================
-# FILE SINK
+# FILE SINK (S3)
 # =========================================================
 for table, folder in TABLE_TO_FOLDER.items():
     sink = (
@@ -191,4 +190,4 @@ for table, folder in TABLE_TO_FOLDER.items():
 # =========================================================
 # EXECUTE
 # =========================================================
-env.execute("Flink to S3 for Data Lake")
+env.execute("Flink Kafka → S3 Data Lake")
