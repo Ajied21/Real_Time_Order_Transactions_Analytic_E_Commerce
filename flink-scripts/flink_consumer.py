@@ -19,11 +19,11 @@ import datetime
 BOOTSTRAP_SERVERS = "kafka:9092"
 
 KAFKA_TOPICS = [
-    "data_staging.public.bronze_customer_raw",
-    "data_staging.public.bronze_orders_raw",
-    "data_staging.public.bronze_payments_raw",
-    "data_staging.public.bronze_product_raw",
-    "data_staging.public.bronze_shipping_raw",
+    "data_lake.public.bronze_customer_raw",
+    "data_lake.public.bronze_orders_raw",
+    "data_lake.public.bronze_payments_raw",
+    "data_lake.public.bronze_product_raw",
+    "data_lake.public.bronze_shipping_raw",
 ]
 
 TABLE_TO_FOLDER = {
@@ -37,21 +37,25 @@ TABLE_TO_FOLDER = {
 BASE_OUTPUT_PATH = "s3a://real-time-ecommerce-analytics/data-lake"
 
 # =========================================================
-# MODE (NORMAL / BACKFILL)
+# MODE
 # =========================================================
 FLINK_MODE = os.getenv("FLINK_MODE", "normal")  # normal | backfill
 BACKFILL_FROM_DATE = os.getenv("BACKFILL_FROM_DATE")  # YYYY-MM-DD
 BACKFILL_FROM_HOUR = int(os.getenv("BACKFILL_FROM_HOUR", "0"))
 
-INGEST_DATE = datetime.date.today().isoformat()
+INGEST_DATE = (
+    BACKFILL_FROM_DATE
+    if FLINK_MODE == "backfill" and BACKFILL_FROM_DATE
+    else datetime.date.today().isoformat()
+)
+
+WIB = datetime.timezone(datetime.timedelta(hours=7))
 
 # =========================================================
-# FLINK ENVIRONMENT
+# FLINK ENV
 # =========================================================
 env = StreamExecutionEnvironment.get_execution_environment()
 env.set_parallelism(1)
-
-# wajib untuk FileSink & offset commit
 env.enable_checkpointing(5000)
 
 # =========================================================
@@ -59,26 +63,19 @@ env.enable_checkpointing(5000)
 # =========================================================
 if FLINK_MODE == "backfill":
     if not BACKFILL_FROM_DATE:
-        raise ValueError(
-            "BACKFILL_FROM_DATE wajib di-set saat FLINK_MODE=backfill"
-        )
+        raise ValueError("BACKFILL_FROM_DATE wajib di-set saat backfill")
 
     backfill_dt = datetime.datetime.strptime(
         BACKFILL_FROM_DATE, "%Y-%m-%d"
     ).replace(hour=BACKFILL_FROM_HOUR)
 
-    backfill_ts_ms = int(backfill_dt.timestamp() * 1000)
-
-    print(
-        f"[BACKFILL MODE] Replay Kafka from {backfill_dt} "
-        f"(timestamp_ms={backfill_ts_ms})"
+    starting_offsets = KafkaOffsetsInitializer.timestamp(
+        int(backfill_dt.timestamp() * 1000)
     )
 
-    starting_offsets = KafkaOffsetsInitializer.timestamp(backfill_ts_ms)
+    print(f"[BACKFILL] from {BACKFILL_FROM_DATE}")
 
 else:
-    print("[NORMAL MODE] Using committed Kafka offsets")
-
     starting_offsets = KafkaOffsetsInitializer.committed_offsets(
         KafkaOffsetsInitializer.OffsetResetStrategy.LATEST
     )
@@ -103,7 +100,7 @@ stream = env.from_source(
 )
 
 # =========================================================
-# TRANSFORM: Debezium → (table, json_string)
+# TRANSFORM
 # =========================================================
 def extract_payload(value):
     try:
@@ -119,29 +116,38 @@ def extract_payload(value):
         if not after or op not in ("c", "u", "r"):
             return None
 
+        # ===============================
+        # FIX DATE (UTC -> WIB)
+        # ===============================
+        if "date" in after:
+            dt_utc = datetime.datetime.fromisoformat(
+                after["date"]
+            ).replace(tzinfo=datetime.timezone.utc)
+
+            dt_wib = dt_utc.astimezone(WIB)
+            after["date"] = dt_wib.date().isoformat()
+
+            # backfill date filter
+            if FLINK_MODE == "backfill":
+                if after["date"] != BACKFILL_FROM_DATE:
+                    return None
+
         table = source.get("table")
 
         result = {
             "op": op,
-            "connector": source.get("connector"),
             "db": source.get("db"),
             "schema": source.get("schema"),
             "table_name": table,
-            "source_ts_ms": source.get("ts_ms"),
-            "event_ts_ms": payload.get("ts_ms"),
-            "ts_us": payload.get("ts_us"),
-            "ts_ns": payload.get("ts_ns"),
-            "transaction": payload.get("transaction"),
             "_ingest_date": INGEST_DATE,
         }
 
-        # actual row data
         result.update(after)
 
         return table, json.dumps(result)
 
     except Exception as e:
-        print("JSON ERROR:", e)
+        print("ERROR:", e)
         return None
 
 
@@ -154,22 +160,16 @@ processed = (
     .filter(lambda x: x is not None)
 )
 
-# DEBUG (optional)
 processed.print()
 
 # =========================================================
-# FILE SINK PER TABLE (PARTITION BY INGEST DATE)
+# FILE SINK
 # =========================================================
 for table, folder in TABLE_TO_FOLDER.items():
-
-    sink_path = (
-        f"{BASE_OUTPUT_PATH}/{folder}/_ingest_date={INGEST_DATE}"
-    )
-
     sink = (
         FileSink.for_row_format(
-            base_path=sink_path,
-            encoder=Encoder.simple_string_encoder("UTF-8"),
+            f"{BASE_OUTPUT_PATH}/{folder}/{INGEST_DATE}",
+            Encoder.simple_string_encoder("UTF-8"),
         )
         .with_output_file_config(
             OutputFileConfig.builder()
@@ -177,9 +177,7 @@ for table, folder in TABLE_TO_FOLDER.items():
             .with_part_suffix(".json")
             .build()
         )
-        .with_rolling_policy(
-            RollingPolicy.on_checkpoint_rolling_policy()
-        )
+        .with_rolling_policy(RollingPolicy.on_checkpoint_rolling_policy())
         .build()
     )
 
@@ -193,6 +191,4 @@ for table, folder in TABLE_TO_FOLDER.items():
 # =========================================================
 # EXECUTE
 # =========================================================
-env.execute(
-    "Flink Bronze Multi Topic → S3 "
-    "(Normal & Backfill Mode, Partitioned by Ingest Date)")
+env.execute("Flink to S3 for Data Lake")

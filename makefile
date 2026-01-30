@@ -167,6 +167,8 @@ kubectl-database-k8s:
 	@echo 'Apply Kubernetes Database Processing ...'
 	@echo '__________________________________________________________'
 	@kubectl apply -R -f k8s/database/
+	@echo '__________________________________________________________'
+	@kubectl scale deployment pgadmin --replicas=0
 	@echo '==========================================================='
 
 kubectl-Stopping-database-k8s:
@@ -246,10 +248,6 @@ kubectl-Stopping-streaming-k8s:
 	kubectl scale deployment flink-jobmanager --replicas=0
 	@echo '__________________________________________________________'
 	kubectl scale deployment flink-taskmanager --replicas=0
-	@echo '__________________________________________________________'
-	kubectl scale debezium-register-connector --replicas=0
-	@echo '__________________________________________________________'
-	kubectl scale deployment schema-registry --replicas=0
 	@echo '==========================================================='
 
 kubectl-Starting-streaming-k8s:
@@ -265,8 +263,6 @@ kubectl-Starting-streaming-k8s:
 	kubectl scale deployment flink-jobmanager --replicas=1
 	@echo '__________________________________________________________'
 	kubectl scale deployment flink-taskmanager --replicas=1
-	@echo '__________________________________________________________'
-	kubectl scale deployment schema-registry --replicas=1
 	@echo '==========================================================='
 
 kubectl-monitoring-k8s:
@@ -422,6 +418,25 @@ kubectl-running-monitoring-k8s:
 	@echo '==========================================================='
 	@echo 'Kubernetes Monitoring Processing DONE'
 	@echo '==========================================================='
+
+# -------------
+# Kubernetes___play
+# -------------
+
+kubectl-Starting-Streaming-k8s:
+	@echo 'Running streaming...'
+	@$(MAKE) kubectl-streaming-k8s
+	@echo 'Waiting 15 seconds before running Debezium...'
+	@sleep 15
+	@$(MAKE) kubectl-running-streaming-debezium-k8s
+	@echo 'Streaming Starting successfully'
+	@echo '__________________________________________________________'
+
+kubectl-Stop-Streaming-k8s: kubectl-streaming-delete-connector-k8s kubectl-Stopping-streaming-k8s
+	@echo '__________________________________________________________'
+	@echo 'Streaming Stopping successfully'
+	@echo '__________________________________________________________'
+
 
 # =====================================
 # Terraform AWS – Makefile

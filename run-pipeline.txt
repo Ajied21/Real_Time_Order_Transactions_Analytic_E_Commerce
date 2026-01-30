@@ -9,24 +9,23 @@ make DDL
 make DML
 kubectl scale deployment postgres --replicas=1
 kubectl scale deployment postgres --replicas=0
-kubectl scale deployment pgadmin --replicas=0
+
+--------------------------------------------------------------------------------------------------------------------------------------
 
 data streaming !!!
-run bareng :
-make kubectl-streaming-delete-connector-k8s
+run pertama:
 make kubectl-streaming-k8s
 
-run bareng start again:
-make kubectl-streaming-delete-connector-k8s
-make kubectl-streaming-starting-connector-k8s
-make kubectl-Starting-streaming-k8s
+run kedua:
+make kubectl-running-streaming-debezium-k8s
 
 run bareng stop/delete:
-make kubectl-streaming-delete-connector-k8s
-make kubectl-Stopping-streaming-k8s
+make kubectl-Stop-Streaming-k8s
 
 run container debezium:
 make kubectl-running-streaming-debezium-k8s
+
+--------------------------------------------------------------------------------------------------------------------------------------
 
 data batching !!!
 make kubectl-batching-k8s
@@ -46,10 +45,9 @@ run flink normal :
 
 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
 
-run flink backfill :
+run flink backfill (BACKFILL_FROM_DATE = diubah sesuai tanggal kebutuhan):
 
-FLINK_MODE=backfill BACKFILL_FROM_DATE=2026-01-25 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
-
+FLINK_MODE=backfill BACKFILL_FROM_DATE=2026-01-28 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
 
 spark bash :
 
