@@ -28,12 +28,12 @@ if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
 # =====================================================
 parser = argparse.ArgumentParser(description="Spark Bronze to S3")
 parser.add_argument("--table", help="specific table (customer, orders, etc)")
-parser.add_argument("--process_date", help="specific date folder (ex: 2026-01-11--02)")
+parser.add_argument("--process_date", help="specific date folder (ex: 2026-01-28)")
 parser.add_argument("--run_all", action="store_true", help="run all tables & dates")
 args = parser.parse_args()
 
 # =====================================================
-# SPARK SESSION (EXPLICIT CREDENTIAL)
+# SPARK SESSION
 # =====================================================
 spark = (
     SparkSession.builder
@@ -99,7 +99,8 @@ for table in tables:
         dates = list_dirs(table_path)
 
     for d in dates:
-        input_path = f"{table_path}/{d}/*.json"
+        # 🔥 FIX UTAMA: recursive read (handle folder jam)
+        input_path = f"{table_path}/{d}/**/*.json"
         output_path = f"{OUTPUT_BASE}/{table}/{d}"
 
         print("=" * 80)

@@ -1,8 +1,9 @@
-run architecture
+- run architecture
 
 kubectl get pods
 
-data sources !!!
+- data sources !!!
+
 make kubectl-database-k8s
 make kubectl-running-database-k8s
 make DDL
@@ -12,89 +13,93 @@ kubectl scale deployment postgres --replicas=0
 
 --------------------------------------------------------------------------------------------------------------------------------------
 
-data streaming !!!
-run pertama:
+- data streaming !!!
+
+- run pertama:
+
 make kubectl-streaming-k8s
 
-run kedua:
+- run kedua:
+
 make kubectl-running-streaming-debezium-k8s
 
-run bareng stop/delete:
+- run bareng stop/delete:
+
 make kubectl-Stop-Streaming-k8s
 
-run container debezium:
+- run container debezium:
+
 make kubectl-running-streaming-debezium-k8s
 
 --------------------------------------------------------------------------------------------------------------------------------------
 
-data batching !!!
+- data batching !!!
+
 make kubectl-batching-k8s
 make kubectl-Starting-batching-k8s
 make kubectl-Stopping-batching-k8s
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-proses streaming !!!!
+- proses streaming !!!!
 
 kubectl get pods
 
 kubectl exec -it flink-jobmanager-xxxxxxxxxx -- bash
 
-copy flink :
+- copy flink :
+
 kubectl cp flink-scripts/flink_consumer.py flink-jobmanager-xxxxxxxxxx:/opt/flink/flink-scripts/flink_consumer.py 
 
-run flink normal (secara real-time):
+- run flink normal (secara real-time):
 
 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
 
-run flink backfill (BACKFILL_FROM_DATE = diubah sesuai tanggal kebutuhan):
+- run flink backfill (BACKFILL_FROM_DATE = diubah sesuai tanggal kebutuhan):
 
 FLINK_MODE=backfill BACKFILL_FROM_DATE=2026-01-28 flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-proses batching !!!
+- proses batching !!!
 
-spark bash :
+- spark bash :
 
 kubectl exec -it spark-xxxxxxxxxx -- bash
 
-copy aws :
+- copy spark_jobs_s3 :
+
 kubectl cp spark-scripts/spark_jobs_s3.py cek_nods:/opt/app/spark_jobs_s3.py
 
-1.spark+aws :
-mkdir secret_aws
+- copy spark_aws .env :
 
-2.copy spark_aws :
 kubectl cp .env cek_nods:/opt/app/.env
 
-3.spark+aws (penting) in /opt/app/ :
+- spark+aws (penting) in /opt/app/ :
+
 set -a source .env set +a
 
-output env :
-cat /opt/app/.env
+- output env :
 
-run spark :
+cat .env
 
-spark-submit spark_jobs_s3.py --run_all # run all
+- copy file/data ke local :
 
-spark-submit spark_jobs_s3.py --table orders # per table
-
-copy file/data ke local :
 kubectl cp spark-849c654cfc-mfqdl:/opt/app/output/bronze_csv ./bronze_csv
 
-run to s3 change parquet :
+- run to s3 change parquet :
 
-spark-submit spark_jobs_s3.py --table customer --process_date 2026-01-21--06
+spark-submit spark_jobs_s3.py --run_all #ambil semua
 
-run to redshift :
+spark-submit spark_jobs_s3.py --table customer --process_date 2026-01-21--06 #backfill_date
 
-spark-submit Ingest_to_Redshift.py --table customer --process_date 2026-01-21
+- run to redshift :
 
+spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21 #backfill_date
+
+REDSHIFT_HOST=xxxxxxxxxx REDSHIFT_DB=xxxxxxxxxx REDSHIFT_USER=xxxxxxxxxx REDSHIFT_PASSWORD=xxxxxxxxxx REDSHIFT_PORT=5439 spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21 #backfill_date2
 
 spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.4 --jars /path/to/RedshiftJDBC42-no-awssdk-2.1.0.12.jar Ingestion_to_Redshift.py --table customer
-
-spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -109,10 +114,12 @@ run cdc lagi ke kafka lalu ke batching
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
-export REDSHIFT_HOST=real-time-ecommerce-analytics-cluster.cqx6yxf2ywld.ap-southeast-1.redshift.amazonaws.com
-export REDSHIFT_DB=real_time_ecommerce_analytics
-export REDSHIFT_USER=adminuser
-export REDSHIFT_PASSWORD='Alonedc35!'
+saat mau ingestion ke redshift :
+
+export REDSHIFT_HOST=xxxxxxxxxx
+export REDSHIFT_DB=xxxxxxxxxx
+export REDSHIFT_USER=xxxxxxxxxx
+export REDSHIFT_PASSWORD=xxxxxxxxxx
 export REDSHIFT_PORT=5439
 
 ---------------------------------------------------------------------------------------------------------------------------------------
