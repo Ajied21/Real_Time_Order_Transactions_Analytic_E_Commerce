@@ -71,6 +71,18 @@ kubectl exec -it spark-xxxxxxxxxx -- bash
 
 kubectl cp spark-scripts/spark_jobs_s3.py cek_nods:/opt/app/spark_jobs_s3.py
 
+- copy Ingestion_to_Redshift Ingestion_to_Redshift :
+
+kubectl cp spark-scripts/Ingestion_to_Redshift.py cek_nods:/opt/app/Ingestion_to_Redshift.py
+
+- copy Ingestion_per-table :
+
+kubectl cp spark-scripts/Ingestion_Customer.py cek_nods:/opt/app/Ingestion_Customer.py
+kubectl cp spark-scripts/Ingestion_Orders.py cek_nods:/opt/app/Ingestion_Orders.py
+kubectl cp spark-scripts/Ingestion_Payments.py cek_nods:/opt/app/Ingestion_Payments.py
+kubectl cp spark-scripts/Ingestion_Product.py cek_nods:/opt/app/Ingestion_Product.py
+kubectl cp spark-scripts/Ingestion_Shipping.py cek_nods:/opt/app/Ingestion_Shipping.py
+
 - copy spark_aws .env :
 
 kubectl cp .env cek_nods:/opt/app/.env
@@ -93,13 +105,29 @@ spark-submit spark_jobs_s3.py --run_all #ambil semua
 
 spark-submit spark_jobs_s3.py --table customer --process_date 2026-01-21--06 #backfill_date
 
-- run to redshift :
+- run to redshift Ingestion_to_Redshift :
 
 spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21 #backfill_date
 
-REDSHIFT_HOST=xxxxxxxxxx REDSHIFT_DB=xxxxxxxxxx REDSHIFT_USER=xxxxxxxxxx REDSHIFT_PASSWORD=xxxxxxxxxx REDSHIFT_PORT=5439 spark-submit Ingestion_to_Redshift.py --table customer --process_date 2026-01-21 #backfill_date2
+- run to redshift Ingestion_per-table :
 
-spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.4 --jars /path/to/RedshiftJDBC42-no-awssdk-2.1.0.12.jar Ingestion_to_Redshift.py --table customer
+spark-submit Ingestion_Customer.py --process_date 2026-01-28 #backfill_date_pertable
+spark-submit Ingestion_Orders.py --process_date 2026-01-28 #backfill_date_pertable
+spark-submit Ingestion_Payments.py --process_date 2026-01-28 #backfill_date_pertable
+spark-submit Ingestion_Product.py --process_date 2026-01-28 #backfill_date_pertable
+spark-submit Ingestion_Shipping.py --process_date 2026-01-28 #backfill_date_pertable
+
+spark-submit Ingestion_Customer.py --run_all
+spark-submit Ingestion_Orders.py --run_all
+spark-submit Ingestion_Payments.py --run_all
+spark-submit Ingestion_Product.py --run_all
+spark-submit Ingestion_Shipping.py --run_all
+
+spark-submit Ingestion_Customer.py --run_latest
+spark-submit Ingestion_Orders.py --run_latest
+spark-submit Ingestion_Payments.py --run_latest
+spark-submit Ingestion_Product.py --run_latest
+spark-submit Ingestion_Shipping.py --run_latest
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
