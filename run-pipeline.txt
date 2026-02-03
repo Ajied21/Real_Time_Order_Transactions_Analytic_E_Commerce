@@ -41,6 +41,14 @@ make kubectl-Stopping-batching-k8s
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 
+- monitoring !!!
+
+make kubectl-monitoring-k8s
+make kubectl-Stopping-monitoring-k8s
+make kubectl-Starting-monitoring-k8s
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
 - proses streaming !!!!
 
 kubectl get pods

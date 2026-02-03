@@ -60,54 +60,6 @@ docker-build-batching:
 	@docker build -t batching_spark -f ./docker/Dockerfile.spark .
 	@echo '==========================================================='
 
-airflow:
-	@echo '__________________________________________________________'
-	@echo 'Creating Airflow Instance ...'
-	@echo '__________________________________________________________'
-	@docker compose -f ./docker-compose/docker-compose-airflow.yaml --env-file .env up -d
-	@echo '==========================================================='
-
-spark:
-	@echo '__________________________________________________________'
-	@echo 'Creating Spark Instance ...'
-	@echo '__________________________________________________________'
-	@docker compose -f ./docker-compose/docker-compose-spark.yaml --env-file .env up -d
-	@echo '==========================================================='
-
-# spark-consume-markets:
-# 	@echo '__________________________________________________________'
-# 	@echo 'Consuming Markets events ...'
-# 	@echo '__________________________________________________________'
-# 	@docker exec ${SPARK_WORKER_CONTAINER_NAME}-2 \
-# 		spark-submit \
-# 		/spark-scripts/markets.py
-
-download-debezium-connector-postgres:
-	@echo "__________________________________________________________"
-	@echo "Cek Plugin Debezium..."
-	@if [ -f "${DEBEZIUM_PATH}" ]; then \
-	    echo "FILE SUDAH ADA: ${DEBEZIUM_FILE}"; \
-	else \
-	    echo "FILE TIDAK ADA, MENDOWNLOAD..."; \
-	    mkdir -p ./scripts; \
-	    curl -L -o ${DEBEZIUM_PATH} ${DEBEZIUM_URL}; \
-	    echo "Download selesai → ${DEBEZIUM_PATH}"; \
-	fi
-	@echo "==========================================================="
-
-create-debezium-ui-config:
-	@echo "__________________________________________________________"
-	@echo "Cek File Konfigurasi Debezium UI..."
-	@if [ -f "./scripts/debezium-ui.properties" ]; then \
-	    echo "FILE SUDAH ADA: debezium-ui.properties"; \
-	else \
-	    echo "FILE TIDAK ADA, MEMBUAT FILE..."; \
-	    mkdir -p ./scripts; \
-	    echo "debezium.ui.config.storage.url=http://debezium:8083" > ./scripts/debezium-ui.properties; \
-	    echo "Config berhasil dibuat → ./scripts/debezium-ui.properties"; \
-	fi
-	@echo "==========================================================="
-
 docker-build-streaming: download-debezium-connector-postgres create-debezium-ui-config
 	@echo '__________________________________________________________'
 	@echo 'Building Docker Images Streaming Processing ...'
@@ -187,31 +139,6 @@ kubectl-Starting-database-k8s:
 	@kubectl scale deployment postgres --replicas=1
 	@echo '__________________________________________________________'
 	@kubectl scale deployment pgadmin --replicas=1
-	@echo '==========================================================='
-
-kubectl-batching-k8s:
-	@echo '__________________________________________________________'
-	@echo 'Apply Kubernetes Batching Processing ...'
-	@echo '__________________________________________________________'
-	@kubectl apply -R -f k8s/batching/
-	@echo '==========================================================='
-
-kubectl-Stopping-batching-k8s:
-	@echo '__________________________________________________________'
-	@echo 'Stopping Kubernetes Batching ...'
-# 	@echo '__________________________________________________________'
-# 	@kubectl scale deployment airflow --replicas=0
-	@echo '__________________________________________________________'
-	kubectl scale deployment spark --replicas=0
-	@echo '==========================================================='
-
-kubectl-Starting-batching-k8s:
-	@echo '__________________________________________________________'
-	@echo 'Starting Kubernetes Batching ...'
-	@echo '__________________________________________________________'
-# 	@kubectl scale deployment airflow --replicas=1
-# 	@echo '__________________________________________________________'
-	kubectl scale deployment spark --replicas=1
 	@echo '==========================================================='
 
 kubectl-streaming-delete-connector-k8s:
@@ -340,29 +267,6 @@ kubectl-stop-database-k8s:
 	@pkill -f "kubectl port-forward svc/postgres 5432:5432" && \
 	echo 'PostgreSQL port-forward STOPPED' || \
 	echo 'PostgreSQL port-forward not running'
-
-kubectl-running-batching-k8s:
-	@echo '==========================================================='
-	@echo 'Running Kubernetes Batching Processing ...'
-	@echo '==========================================================='
-
-# 	@echo 'Starting Airflow port-forward (8085)...'
-# 	@kubectl port-forward svc/airflow 8085:8080 > /tmp/airflow_pf.log 2>&1 & \
-# 	sleep 3 && \
-# 	netstat -ano | grep ':8085' >/dev/null 2>&1 && \
-# 	echo 'Airflow READY at http://localhost:8085' || \
-# 	( echo 'Airflow FAILED'; tail -n 5 /tmp/airflow_pf.log )
-
-	@echo 'Starting Spark port-forward (9100)...'
-	@kubectl port-forward svc/spark 9100:8080 > /tmp/spark_pf.log 2>&1 & \
-	sleep 3 && \
-	netstat -ano | grep ':9100' >/dev/null 2>&1 && \
-	echo 'Spark READY at http://localhost:9100' || \
-	( echo 'Spark FAILED'; tail -n 5 /tmp/spark_pf.log )
-
-	@echo '==========================================================='
-	@echo 'Kubernetes Batching Processing DONE'
-	@echo '==========================================================='
 
 kubectl-running-streaming-debezium-k8s:
 	@echo '==========================================================='
