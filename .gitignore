@@ -7,7 +7,6 @@ postgres-data
 .aws/
 *.tfstate
 *.tfstate.*
-.terraform/
 keys/
 *.tfvars
 *.lock.hcl
