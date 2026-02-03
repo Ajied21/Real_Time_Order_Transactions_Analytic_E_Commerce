@@ -12,4 +12,3 @@ keys/
 *.tfvars
 *.lock.hcl
 .env
-secret_aws/.env
