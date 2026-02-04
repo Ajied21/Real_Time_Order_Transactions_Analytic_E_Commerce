@@ -49,7 +49,7 @@ Infrastructure & Operations:
 # Data Architecture
 
 <div style="text-align: center;">
-  <img src="./images/Architecture.png" width="700">
+  <img src="./images/Architecture.png" width="650">
 </div>
 
 # Technologies
