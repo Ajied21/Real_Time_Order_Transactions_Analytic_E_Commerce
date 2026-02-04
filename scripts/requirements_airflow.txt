@@ -1,5 +1,0 @@
-lxml
-pandas==2.2.2
-polars==0.20.27
-pyspark==3.5.5
-requests==2.31

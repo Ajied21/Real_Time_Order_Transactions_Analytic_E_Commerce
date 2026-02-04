@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flink-conf
+data:
+  flink-conf.yaml: | # add is here for bucket S3
+    jobmanager.rpc.address: flink-jobmanager
+    jobmanager.rpc.bind-address: 0.0.0.0
+    jobmanager.host: flink-jobmanager
+    jobmanager.bind-host: 0.0.0.0
+    taskmanager.bind-host: 0.0.0.0
+    taskmanager.host: 0.0.0.0
+    taskmanager.numberOfTaskSlots: 1
+    parallelism.default: 1
+    rest.bind-address: 0.0.0.0
+    rest.port: 8081
+    jobmanager.memory.process.size: 768m
+    taskmanager.memory.process.size: 1024m
+    blob.server.port: 6124
+    security.context.factory.classes: org.apache.flink.runtime.security.contexts.NoOpSecurityContextFactory

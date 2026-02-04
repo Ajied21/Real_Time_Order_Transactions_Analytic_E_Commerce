@@ -1,25 +1,44 @@
 ## Real Time Order Transactions Analytic E-Commerce
 
-E-commerce companies need a system that can:
+## Overview
 
-- Collect order transactions in real time
-- View order updates as they occur (NEW → PAID → SHIPPED → COMPLETED)
-- Quickly calculate GMV (Gross Merchandise Value)
-- Monitor sales activity by product, category, city, and hour
-- Provide high-quality data for batch analysis
-- Generate daily, weekly, and monthly reports
-- That's why companies need a Real-Time + Batch Data Pipeline like the one you built.
+This project implements a real-time streaming data pipeline for e-commerce order transactions. The pipeline is designed to capture order changes as they occur, process them with low latency, and store the results in a scalable Amazon S3 data lake for further analytics.
+The system focuses on streaming ingestion and processing only. Batch analytics, BI dashboards, and data warehouse integration are intentionally kept out of scope to clearly demonstrate real-time data engineering capabilities.
+
+## Business Problem
+
+E-commerce platforms generate high-volume transactional data with frequent state changes. The business needs a system that can:
+
+- Capture order transactions in real time
+- Track order lifecycle changes (NEW → PAID → SHIPPED → COMPLETED)
+- Calculate Gross Merchandise Value (GMV) with low latency
+- Monitor sales activity by product, category, city, and time window
+- Store high-quality streaming data for future batch and analytical use
 
 ## Project Objectives
 
 This pipeline was built to:
 
-Real-time objectives
+- Capture row-level changes from PostgreSQL using Debezium CDC
+- Stream transactional events through Apache Kafka
+- Perform stateful streaming ETL using Apache Flink
+- Handle real-time aggregations and order state transitions
+- Persist near real-time processed data into Amazon S3 as a data lake
+- Deploy services using Docker & Kubernetes
+- Monitor system health and metrics with Prometheus & Grafana
 
-- Capture order changes in PostgreSQL using Debezium CDC
-- Send streaming events to Kafka
-- Process events (streaming ETL) with Flink with low latency
-- Save real-time snapshots to the Data Lake in S3 AWS
+## Architecture
+
+Data Flow:
+
+`PostgreSQL → Debezium CDC → Kafka → Flink (Streaming ETL) → Amazon S3`
+
+Infrastructure & Operations:
+
+- Containerized services managed with Kubernetes
+- Docker Hub used as container registry
+- Infrastructure provisioned using Terraform (IaC)
+- Metrics collected by Prometheus and visualized in Grafana
 
 # ERD (Entity Relationship Diagram)
 
@@ -30,7 +49,7 @@ Real-time objectives
 # Data Architecture
 
 <div style="text-align: center;">
-  <img src="./images/Architecture.png" width="950">
+  <img src="./images/Architecture.png" width="700">
 </div>
 
 # Technologies
@@ -63,7 +82,7 @@ Real-time objectives
 
 **start:**
 
-- `make kubectl-Starting-batching-k8s`
+- `make kubectl-database-k8s`
 
 **Run Create DB in Postgres**
 
@@ -75,7 +94,8 @@ Real-time objectives
 
 **stop/delete:**
 
-- `make kubectl-Stopping-batching-k8s`
+- `make kubectl-Stopping-database-k8s`
+
 
 2. **Run for step streaming to active and inactive**
 
@@ -87,13 +107,38 @@ Real-time objectives
 
 `make kubectl-running-streaming-debezium-k8s`
 
+**Checking Status Debezium**
+
+`curl http://localhost:8083/connectors/data_lake-cdc-connector/status`
+
 **stop/delete:**
 
 `make kubectl-Stop-Streaming-k8s`
 
+**Streaming Process:**
+
+`make kubectl get pods` #check pods in running
+
+**Copy flink:**
+
+`kubectl cp flink-scripts/flink_consumer.py flink-jobmanager-xxxxxxxxxx:/opt/flink/flink-scripts/flink_consumer.py`
+
+**Enter to Bash Flink:**
+
+`kubectl exec -it flink-jobmanager-xxxxxxxxxx -- bash`
+
+**Run Flink normal (real-time):**
+
+`flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1`
+
+**Run Flink Backfill (BACKFILL_FROM_DATE = date):**
+
+`FLINK_MODE=backfill BACKFILL_FROM_DATE=2026-xx-xx flink run -py /opt/flink/flink-scripts/flink_consumer.py -p 1`
+
+
 3. **Run for step Monitoring to active and inactive**
 
-**start**
+**start:**
 
 - `make kubectl-Starting-monitoring-k8s`
 
@@ -113,6 +158,31 @@ Real-time objectives
 | `prometheus`   | Metrics real-time data.                                                                  |
 | `grafana`      | Monitor real-time data.                                                                  |
 
+## Please Add at .env
+
+```
+AWS_ACCESS_KEY_ID=Your-AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY=Your-AWS_SECRET_ACCESS_KEY
+AWS_DEFAULT_REGION=ap-southeast-1
+```
+
+*copy and paste to file .env
+
+## Please Add for Bucket S3 at k8s/streaming/config/config-flink.yaml
+
+```
+fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+fs.s3a.path.style.access: true
+fs.s3a.connection.ssl.enabled: true
+state.checkpoints.dir: s3a://Your-buckets/flink/checkpoints
+state.savepoints.dir: s3a://Your-buckets/flink/savepoints
+fs.s3a.endpoint: s3.amazonaws.com
+fs.s3a.access.key: Your-Access-Key
+fs.s3a.secret.key: Your-secret-Key
+fs.s3a.path.style.access: true
+```
+
+*copy and paste to file config-flink.yaml at flink-conf.yaml
 
 **additional**
 
@@ -132,3 +202,47 @@ Real-time objectives
 - kubectl delete pv --all
 - kubectl delete configmap --all
 - kubectl delete secret --all
+
+## Documentation
+
+Postgresql With PgAdmin UI :
+
+`http://localhost:30080/`
+
+<div style="text-align: center;">
+  <img src="./images/Postgresql/postgre.png" width="500">
+</div>
+
+Kafka With provectuslabs UI :
+
+`http://localhost:30087/ui/clusters/local/all-topics`
+
+<div style="text-align: center;">
+  <img src="./images/Kafka/kafka_topic.png" width="500">
+</div>
+
+Flink UI:
+
+`http://localhost:30081/`
+
+<div style="text-align: center;">
+  <img src="./images/Flink/flink.png" width="500">
+</div>
+
+Prometheus & Grafana:
+
+- Prometheus
+
+`http://localhost:32222/`
+
+<div style="text-align: center;">
+  <img src="" width="500">
+</div>
+
+- Grafana
+
+`http://localhost:32000/`
+
+<div style="text-align: center;">
+  <img src="" width="500">
+</div>

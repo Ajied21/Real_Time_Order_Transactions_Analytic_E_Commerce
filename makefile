@@ -203,6 +203,8 @@ kubectl-Stopping-monitoring-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Stopping Kubernetes Monitoring ...'
 	@echo '__________________________________________________________'
+	@kubectl delete daemonset node-exporter
+	@echo '__________________________________________________________'
 	@kubectl scale deployment prometheus --replicas=0
 	@echo '__________________________________________________________'
 	@kubectl scale deployment grafana --replicas=0
