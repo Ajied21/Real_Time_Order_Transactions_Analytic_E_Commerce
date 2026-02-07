@@ -214,6 +214,8 @@ kubectl-Starting-monitoring-k8s:
 	@echo '__________________________________________________________'
 	@echo 'Starting Kubernetes Monitoring ...'
 	@echo '__________________________________________________________'
+	@kubectl apply -f ./k8s/monitoring/node-exporter/
+	@echo '__________________________________________________________'
 	@kubectl scale deployment prometheus --replicas=1
 	@echo '__________________________________________________________'
 	kubectl scale deployment grafana --replicas=1

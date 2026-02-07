@@ -33,6 +33,10 @@ Data Flow:
 
 `PostgreSQL → Debezium CDC → Kafka → Flink (Streaming ETL) → Amazon S3`
 
+CI/CD:
+
+`GitHub Actions → Build Docker (Apps) → Push Images → Docker Hub Registry → Deployment to Kubernetes`
+
 Infrastructure & Operations:
 
 - Containerized services managed with Kubernetes
@@ -65,6 +69,7 @@ Infrastructure & Operations:
 | **Programming**                     | Python and SQL                                                      |
 | **Metric**                          | Prometheus                                                          |
 | **Dashboard**                       | Grafana                                                             |
+| **CI/CD**                           | Github Actions                                                      |
 
 # Run Project
 
@@ -231,18 +236,44 @@ Flink UI:
 
 Prometheus & Grafana:
 
-- Prometheus
+- Prometheus UI
 
 `http://localhost:32222/`
 
 <div style="text-align: center;">
-  <img src="" width="500">
+  <img src="./images/Prometheus_Grafana/prome.png" width="500">
 </div>
 
-- Grafana
+- Grafana UI
 
 `http://localhost:32000/`
 
 <div style="text-align: center;">
-  <img src="" width="500">
+  <img src="./images/Prometheus_Grafana/Grafana_2.png" width="500">
+</div>
+
+AWS:
+
+- Premission
+
+<div style="text-align: center;">
+  <img src="./images/AWS/access_s3.png" width="500">
+</div>
+
+- Terraform
+
+<div style="text-align: center;">
+  <img src="./images/AWS/terrform.png" width="500">
+</div>
+
+- S3
+
+<div style="text-align: center;">
+  <img src="./images/AWS/S3.png" width="500">
+</div>
+
+Docker Hub:
+
+<div style="text-align: center;">
+  <img src="./images/Docker/Hub.png" width="500">
 </div>
