@@ -10,3 +10,4 @@ postgres-data
 keys/
 *.tfvars
 *.lock.hcl
+run-pipeline.txt
