@@ -66,7 +66,7 @@ Infrastructure & Operations:
 | **RDBMS**                           | PostgreSQL                                                          |
 | **CDC**                             | Debezium                                                            |
 | **Stream processing**               | Apache Kafka & Apache Flink                                         |
-| **Programming**                     | Python and SQL                                                      |
+| **Programming**                     | Python & SQL                                                      |
 | **Metric**                          | Prometheus                                                          |
 | **Dashboard**                       | Grafana                                                             |
 | **CI/CD**                           | Github Actions                                                      |
@@ -276,4 +276,10 @@ Docker Hub:
 
 <div style="text-align: center;">
   <img src="./images/Docker/Hub.png" width="500">
+</div>
+
+CI/CD Github Actions:
+
+<div style="text-align: center;">
+  <img src="./images/Docker/CI_CD.png" width="500">
 </div>
