@@ -160,8 +160,8 @@ Infrastructure & Operations:
 | `flink`        | Run a Flink cluster, create transfrom and ingestion tables.                              |
 | `postgres`     | Run the database of relationships.                                                       |
 | `terraform`    | Automate several services that are needed, such as BigQuery.                             |
-| `prometheus`   | Metrics real-time data.                                                                  |
-| `grafana`      | Monitor real-time data.                                                                  |
+| `prometheus`   | Metrics kubernetes (K8s) cluster.                                                        |
+| `grafana`      | Monitor kubernetes (K8s) cluster.                                                        |
 
 ## Please Add at .env
 
