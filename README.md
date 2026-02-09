@@ -159,7 +159,7 @@ Infrastructure & Operations:
 | `kafka`        | Spin up a Kafka cluster.                                                                 |
 | `flink`        | Run a Flink cluster, create transfrom and ingestion tables.                              |
 | `postgres`     | Run the database of relationships.                                                       |
-| `terraform`    | Automate several services that are needed, such as BigQuery.                             |
+| `terraform`    | Automate several services that are needed, such as AWS S3.                               |
 | `prometheus`   | Metrics kubernetes (K8s) cluster.                                                        |
 | `grafana`      | Monitor kubernetes (K8s) cluster.                                                        |
 
