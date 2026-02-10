@@ -23,15 +23,15 @@ spec:
             - containerPort: 8083
 
           env:
-            # ===== Kafka Bootstrap =====
+            # Kafka Bootstrap
             - name: BOOTSTRAP_SERVERS
               value: "kafka:9092"
 
-            # ===== Kafka Connect Cluster =====
+            # Kafka Connect Cluster
             - name: GROUP_ID
               value: "debezium-connect-cluster"
 
-            # ===== Internal Topics (WAJIB) =====
+            # Internal Topics
             - name: CONFIG_STORAGE_TOPIC
               value: "_debezium_config"
             - name: OFFSET_STORAGE_TOPIC
@@ -39,7 +39,7 @@ spec:
             - name: STATUS_STORAGE_TOPIC
               value: "_debezium_status"
 
-            # Karena single-broker Kafka
+            # single-broker Kafka
             - name: CONFIG_STORAGE_REPLICATION_FACTOR
               value: "1"
             - name: OFFSET_STORAGE_REPLICATION_FACTOR
@@ -47,7 +47,7 @@ spec:
             - name: STATUS_STORAGE_REPLICATION_FACTOR
               value: "1"
 
-            # ===== Converters =====
+            # Converters
             - name: KEY_CONVERTER
               value: "org.apache.kafka.connect.json.JsonConverter"
             - name: VALUE_CONVERTER
@@ -63,12 +63,12 @@ spec:
             - name: INTERNAL_VALUE_CONVERTER
               value: "org.apache.kafka.connect.json.JsonConverter"
 
-            # ===== REST API =====
+            # REST API
             - name: REST_ADVERTISED_HOST_NAME
               value: "debezium"
             - name: REST_PORT
               value: "8083"
 
-            # ===== Plugin Path =====
+            # Plugin Path
             - name: PLUGIN_PATH
               value: "/kafka/connect"
