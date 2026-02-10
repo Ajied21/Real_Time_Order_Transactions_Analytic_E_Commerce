@@ -1,12 +1,9 @@
 FROM debezium/connect:2.6
 
-# Pakai root hanya kalau perlu debug / install tools tambahan
 USER root
 
-# (OPSIONAL) install tool bantu untuk debug
 RUN microdnf install -y curl jq && microdnf clean all
 
-# Kembalikan ke user default
 USER kafka
 
 EXPOSE 8083
