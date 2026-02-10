@@ -2,15 +2,12 @@ FROM postgres:15
 
 ENV PGDATA=/var/lib/postgresql/data/pgdata
 
-# Copy config dari subfolder scripts
 COPY scripts/postgresql.conf /etc/postgresql/postgresql.conf
 
-# Permission aman
 RUN chown postgres:postgres /etc/postgresql/postgresql.conf
 
 USER postgres
 
 EXPOSE 5432
 
-# Pakai config custom
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
