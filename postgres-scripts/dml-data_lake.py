@@ -6,40 +6,27 @@ import hashlib
 from datetime import datetime
 import uuid
 
-# =====================
-# CONFIG
-# =====================
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "data_lake",
-    "user": "user",
-    "password": "admin123"
-}
+            "host": "localhost",
+            "port": 5432,
+            "dbname": "data_lake",
+            "user": "user",
+            "password": "admin123"
+            }
 
 fake = Faker("id_ID")
 SOURCE_SYSTEM = "faker_app"
 TOPIC_PREFIX = "bronze_topic"
 
-# =====================
-# CONNECT DB
-# =====================
 conn = psycopg2.connect(**DB_CONFIG)
 conn.autocommit = True
 cur = conn.cursor()
 
-
-# =====================
-# HELPER
-# =====================
 def generate_hash(*values):
     raw = "|".join([str(v) for v in values])
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
-# =====================
 # INSERT BRONZE CUSTOMER
-# =====================
 def insert_bronze_customer():
     customer_id = str(uuid.uuid4())
 
@@ -74,10 +61,7 @@ def insert_bronze_customer():
 
     return customer_id
 
-
-# =====================
 # INSERT BRONZE PRODUCT
-# =====================
 def insert_bronze_product():
     product_id = str(uuid.uuid4())
 
@@ -103,10 +87,7 @@ def insert_bronze_product():
 
     return product_id
 
-
-# =====================
 # INSERT BRONZE SHIPPING
-# =====================
 def insert_bronze_shipping():
     shipping_id = str(uuid.uuid4())
 
@@ -134,10 +115,7 @@ def insert_bronze_shipping():
 
     return shipping_id
 
-
-# =====================
 # INSERT BRONZE ORDER
-# =====================
 def insert_bronze_order(customer_id, product_id, shipping_id):
     order_id = str(uuid.uuid4())
 
@@ -152,7 +130,7 @@ def insert_bronze_order(customer_id, product_id, shipping_id):
         datetime.now().strftime("%Y-%m-%d"),
         customer_id,
         shipping_id,
-        str(uuid.uuid4()),  # payment_id (sementara raw)
+        str(uuid.uuid4()),  # payment_id
         product_id,
         str(qty),
         str(price),
@@ -176,10 +154,7 @@ def insert_bronze_order(customer_id, product_id, shipping_id):
 
     return order_id
 
-
-# =====================
 # INSERT BRONZE PAYMENT
-# =====================
 def insert_bronze_payment(order_id):
     payment_id = str(uuid.uuid4())
 
@@ -205,9 +180,6 @@ def insert_bronze_payment(order_id):
     cur.execute(query, (*values, "I", SOURCE_SYSTEM, f"{TOPIC_PREFIX}.payments", row_hash))
 
 
-# =====================
-# MAIN LOOP
-# =====================
 if __name__ == "__main__":
     print("🚀 Inserting data into BRONZE RAW tables...")
 
