@@ -1,12 +1,12 @@
 import psycopg2
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "data_staging",
-    "user": "user",
-    "password": "admin123"
-}
+            "host": "localhost",
+            "port": 5432,
+            "dbname": "data_staging",
+            "user": "user",
+            "password": "admin123"
+            }
 
 conn = psycopg2.connect(**DB_CONFIG)
 conn.autocommit = True
@@ -16,9 +16,7 @@ cur = conn.cursor()
 def create_bronze_tables():
     queries = [
 
-        # =====================
         # BRONZE CUSTOMER RAW
-        # =====================
         """
         CREATE TABLE IF NOT EXISTS bronze_customer_raw (
             _op_type            VARCHAR(5),
@@ -44,9 +42,7 @@ def create_bronze_tables():
         );
         """,
 
-        # =====================
         # BRONZE PRODUCT RAW
-        # =====================
         """
         CREATE TABLE IF NOT EXISTS bronze_product_raw (
             _op_type            VARCHAR(5),
@@ -65,9 +61,7 @@ def create_bronze_tables():
         );
         """,
 
-        # =====================
         # BRONZE SHIPPING RAW
-        # =====================
         """
         CREATE TABLE IF NOT EXISTS bronze_shipping_raw (
             _op_type            VARCHAR(5),
@@ -87,9 +81,7 @@ def create_bronze_tables():
         );
         """,
 
-        # =====================
         # BRONZE PAYMENTS RAW
-        # =====================
         """
         CREATE TABLE IF NOT EXISTS bronze_payments_raw (
             _op_type            VARCHAR(5),
@@ -108,9 +100,7 @@ def create_bronze_tables():
         );
         """,
 
-        # =====================
         # BRONZE ORDERS RAW
-        # =====================
         """
         CREATE TABLE IF NOT EXISTS bronze_orders_raw (
             _op_type            VARCHAR(5),
